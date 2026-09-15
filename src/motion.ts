@@ -114,9 +114,9 @@ export class Motion {
     this.dragging = true;
   }
 
-  drag(from: [number, number], to: [number, number], width: number, height: number, now: number): void {
+  drag(from: [number, number], to: [number, number], width: number, height: number, now: number, radiusRatio = 0.6): void {
     this.advance(now);
-    this.target.drag(from, to, width, height);
+    this.target.drag(from, to, width, height, radiusRatio);
   }
 
   rotate(axis: Axis, angle: number, now: number): void {

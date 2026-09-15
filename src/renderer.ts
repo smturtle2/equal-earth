@@ -1,14 +1,17 @@
 import { mat4, quat } from 'gl-matrix';
 import type { Attitude } from './attitude';
-import { createRows, fitScale } from './projection';
+import { createRows } from './projection';
+import { mapLayout } from './layout';
 import shader from './map.wgsl?raw';
 import earth from './earth.wgsl?raw';
 import presentation from './present.wgsl?raw';
+import fullscreen from './fullscreen.wgsl?raw';
 import { loadTexture, type TextureId } from './textures';
+import { createGlobeRenderer, type GlobeLayer } from './globe-renderer';
 
 const SAMPLE_GRID = 4;
 
-export async function createRenderer(canvas: HTMLCanvasElement, onFailure: (message: string) => void) {
+export async function createRenderer(canvas: HTMLCanvasElement, globeCanvas: HTMLCanvasElement, onFailure: (message: string) => void) {
   if (!navigator.gpu) throw new Error('WebGPU를 사용할 수 있는 브라우저에서 열어 주세요.');
   const adapter = await navigator.gpu.requestAdapter();
   if (!adapter) throw new Error('이 환경에서 WebGPU를 사용할 수 없습니다.');
@@ -26,7 +29,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, onFailure: (mess
 
   const format = navigator.gpu.getPreferredCanvasFormat();
   context.configure({ device, format, alphaMode: 'opaque' });
-  const module = device.createShaderModule({ code: presentation });
+  const module = device.createShaderModule({ code: fullscreen + presentation });
   const [pipeline, computePipeline] = await Promise.all([
     device.createRenderPipelineAsync({
       label: 'equal earth', layout: 'auto',
@@ -54,8 +57,11 @@ export async function createRenderer(canvas: HTMLCanvasElement, onFailure: (mess
   let loading: AbortController | undefined;
   const sampler = device.createSampler({ addressModeU: 'repeat', addressModeV: 'clamp-to-edge',
     magFilter: 'linear', minFilter: 'linear' });
+  const globe = await createGlobeRenderer(device, globeCanvas, format, sampler);
+  let globeLayer: GlobeLayer = 'graticule';
 
   return {
+    setGlobeLayer(layer: GlobeLayer) { globeLayer = layer; },
     async setTexture(id: TextureId): Promise<boolean> {
       loading?.abort();
       const request = new AbortController();
@@ -80,13 +86,15 @@ export async function createRenderer(canvas: HTMLCanvasElement, onFailure: (mess
       const ratio = Math.min(devicePixelRatio || 1, device.limits.maxTextureDimension2D / Math.max(cssWidth, cssHeight));
       const width = Math.max(1, Math.round(cssWidth * ratio));
       const height = Math.max(1, Math.round(cssHeight * ratio));
-      const scale = fitScale(width, height) * attitude.zoom;
-      const shape = `${width}:${height}:${attitude.zoom}`;
+      const layout = mapLayout(cssWidth, cssHeight);
+      const scale = layout.scale * ratio * attitude.zoom;
+      const centerX = layout.x * ratio, centerY = layout.y * ratio;
+      const shape = `${width}:${height}:${scale}:${centerY}`;
 
       if (shape !== lastShape) {
         if (canvas.width !== width) canvas.width = width;
         if (canvas.height !== height) canvas.height = height;
-        const rows = createRows(height, scale, SAMPLE_GRID);
+        const rows = createRows(height, scale, SAMPLE_GRID, centerY);
         if (!rowBuffer || rowBuffer.size !== rows.byteLength) {
           rowBuffer?.destroy();
           rowBuffer = device.createBuffer({ size: rows.byteLength, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
@@ -113,7 +121,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, onFailure: (mess
       quat.conjugate(inverse, attitude.rotation);
       mat4.fromQuat(matrix, inverse);
       values.set(matrix);
-      values.set([width / 2, height / 2, scale, 0], 16);
+      values.set([centerX, centerY, scale, 0], 16);
       device.queue.writeBuffer(uniform, 0, values);
       const commands = device.createCommandEncoder();
       const compute = commands.beginComputePass();
@@ -129,6 +137,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, onFailure: (mess
       pass.setBindGroup(0, bindings);
       pass.draw(3);
       pass.end();
+      globe.draw(commands, attitude, earthTexture, globeLayer);
       device.queue.submit([commands.finish()]);
     },
     destroy() {
@@ -138,6 +147,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, onFailure: (mess
       rowBuffer?.destroy();
       uniform.destroy();
       frame?.destroy();
+      globe.destroy();
       context.unconfigure();
       device.destroy();
     },

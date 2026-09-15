@@ -10,10 +10,22 @@
   </head>
   <body>
     <canvas id="map" tabindex="0" role="img" aria-label="Equal Earth 지도. 드래그로 회전, Shift 드래그 또는 Q와 E로 비틀기, 휠로 확대. 방향키로 회전, 0 또는 더블 클릭으로 초기화." aria-busy="true"></canvas>
-    <div id="texture-control">
-      <select id="texture" aria-label="지도 텍스처" disabled></select>
+    <div id="texture-control" role="group" aria-label="지도 텍스처" aria-busy="true">
+      <button id="texture" type="button" aria-label="지도 텍스처" aria-haspopup="menu" aria-controls="texture-menu" aria-expanded="false" popovertarget="texture-menu" disabled>
+        <span id="texture-label"></span>
+        <svg class="select-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+      </button>
+      <div id="texture-menu" role="menu" aria-label="지도 텍스처 목록" popover></div>
       <span id="texture-status" role="status"></span>
     </div>
+    <section id="globe-panel" aria-label="동기화된 지구본">
+      <div class="globe-heading">
+        <button id="globe-layers-button" type="button" aria-label="지구본 레이어" aria-pressed="false" disabled>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
+        </button>
+      </div>
+      <canvas id="globe" tabindex="0" role="img" aria-label="위도·경도 지구본. 지도와 함께 회전합니다. 드래그 또는 방향키로 회전, Q와 E로 비틀기." aria-busy="true" data-layer="graticule"></canvas>
+    </section>
     <p id="message" role="status" hidden></p>
     <script type="module" src="/src/main.ts"></script>
   </body>

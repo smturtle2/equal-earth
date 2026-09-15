@@ -18,9 +18,9 @@ export class Attitude {
     quat.normalize(this.rotation, this.rotation);
   }
 
-  drag(from: [number, number], to: [number, number], width: number, height: number): void {
-    const a = trackball(from, width, height);
-    const b = trackball(to, width, height);
+  drag(from: [number, number], to: [number, number], width: number, height: number, radiusRatio = 0.6): void {
+    const a = trackball(from, width, height, radiusRatio);
+    const b = trackball(to, width, height, radiusRatio);
     const change = quat.rotationTo(quat.create(), a, b);
     quat.multiply(this.rotation, change, this.rotation);
     quat.normalize(this.rotation, this.rotation);
@@ -29,8 +29,8 @@ export class Attitude {
   magnify(factor: number): void { this.zoom = Math.max(1, Math.min(4, this.zoom * factor)); }
 }
 
-function trackball(point: [number, number], width: number, height: number): vec3 {
-  const radius = Math.min(width, height) * 0.6;
+function trackball(point: [number, number], width: number, height: number, radiusRatio: number): vec3 {
+  const radius = Math.min(width, height) * radiusRatio;
   const x = (point[0] - width / 2) / radius;
   const y = (height / 2 - point[1]) / radius;
   const d2 = x * x + y * y;

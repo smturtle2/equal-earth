@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { quat, vec3 } from 'gl-matrix';
 import { Attitude } from '../src/attitude';
-import { createRows, fitScale, invert, MAX_X, MAX_Y, project } from '../src/projection';
+import { createRows, invert, MAX_X, MAX_Y, project } from '../src/projection';
+import { mapLayout } from '../src/layout';
 
 describe('spherical Equal Earth', () => {
   it('round-trips the world, including the antimeridian and both poles', () => {
@@ -33,15 +34,16 @@ describe('spherical Equal Earth', () => {
 
   it('keeps the cached GPU row coordinates consistent with direct projection at different sizes and zooms', () => {
     for (const [width, height, zoom] of [[1200, 760, 1], [390, 844, 1], [1200, 760, 4]]) {
-      const scale = fitScale(width, height) * zoom;
-      const rows = createRows(height, scale);
+      const layout = mapLayout(width, height);
+      const scale = layout.scale * zoom;
+      const rows = createRows(height, scale, 1, layout.y);
       for (let y = 0; y < height; y += 17) {
         if (rows[y * 4 + 3] < 1) continue;
         const lat = Math.asin(rows[y * 4]);
         const lon = 0.7;
         const [px, py] = project(lon, lat);
         expect(Math.abs(px - lon / rows[y * 4 + 2]) * scale).toBeLessThan(0.01);
-        expect(Math.abs(py - (height / 2 - y - 0.5) / scale) * scale).toBeLessThan(0.01);
+        expect(Math.abs(py - (layout.y - y - 0.5) / scale) * scale).toBeLessThan(0.01);
       }
     }
   });

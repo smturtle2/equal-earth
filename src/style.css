@@ -1,13 +1,76 @@
-:root { color-scheme: light; background: #fff; font-family: system-ui, sans-serif; }
+:root {
+  color-scheme: light;
+  background: #fff;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  --globe-width: clamp(196px, 14.75vw, 236px);
+  --control-surface: #fff;
+  --control-hover: #f7f9fa;
+  --control-shadow: 0 4px 20px #23323e09, 0 0 0 1px #23323e0b;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
-#map { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; outline: none; }
-#map:active { cursor: grabbing; }
-#map:focus-visible { outline: 1px solid #a8b8b1; outline-offset: -5px; }
+#map, #globe { display: block; touch-action: none; cursor: grab; outline: none; }
+#map { width: 100%; height: 100%; }
+#map:active, #globe:active { cursor: grabbing; }
+#map:focus, #globe:focus { outline: none; }
+button { -webkit-tap-highlight-color: transparent; }
 #message { position: fixed; inset: 0; margin: 0; padding: 32px; place-content: center; text-align: center; color: #60716a; font-size: 14px; line-height: 1.7; }
 #message:not([hidden]) { display: grid; }
-#texture-control { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px; max-width: calc(100% - 24px); }
-#texture { font: inherit; font-size: 14px; color: #333; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; max-width: 100%; cursor: pointer; }
-#texture:focus-visible { outline: 2px solid #70899f; outline-offset: 3px; }
-#texture-status { font-size: 13px; color: #555; background: #fff; text-align: center; }
-#texture-status:empty { display: none; }
+#texture-control, #globe-layers-button {
+  background: var(--control-surface);
+  box-shadow: var(--control-shadow);
+}
+#texture-control {
+  position: fixed; bottom: max(24px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+  border-radius: 16px;
+}
+#texture {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 220px; height: 44px; padding: 0 16px; border: 0; border-radius: 16px;
+  font: inherit; font-size: 14px; font-weight: 500; letter-spacing: -.2px;
+  color: #24333e; background: transparent; cursor: pointer;
+}
+#texture:hover, #texture[aria-expanded=true] { background: var(--control-hover); }
+#texture:disabled, #globe-layers-button:disabled { cursor: default; opacity: .5; }
+.select-chevron { flex: none; fill: none; stroke: #6b7e8b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+#texture:focus-visible, #globe-layers-button:focus-visible { outline: 2px solid #92a9b9; outline-offset: 3px; }
+#texture-status { position: absolute; }
+#texture-status:not([data-error=true]) { width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#texture-status[data-error=true] { bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); width: min(340px, 90vw); text-align: center; color: #8f4b42; font-size: 13px; line-height: 1.5; }
+#globe-panel {
+  position: fixed; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom));
+  width: var(--globe-width); padding: 10px; border: 1px solid transparent; background: transparent;
+  pointer-events: none;
+}
+.globe-heading { display: flex; height: 28px; align-items: center; justify-content: flex-end; }
+#globe { width: 100%; height: calc(var(--globe-width) - 70px); pointer-events: auto; }
+#globe-layers-button {
+  display: grid; place-items: center; width: 40px; height: 40px; padding: 10px; border: 0; border-radius: 14px;
+  color: #6b7e8b; cursor: pointer; pointer-events: auto;
+  transition: color 140ms, background-color 140ms, box-shadow 140ms;
+}
+#globe-layers-button:hover { background: var(--control-hover); }
+#globe-layers-button[aria-pressed=true] { color: #243b49; background: #edf3f6; box-shadow: var(--control-shadow), inset 0 0 0 1px #d8e3e9; }
+#globe-layers-button[aria-pressed=true]:hover { background: #e6eef3; }
+#globe-layers-button svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
+#globe-layers-button[aria-pressed=true] svg { stroke-width: 1.8; }
+@media (max-width: 640px) {
+  :root { --globe-width: 176px; }
+  #globe-panel { right: max(16px, env(safe-area-inset-right)); bottom: max(84px, calc(env(safe-area-inset-bottom) + 68px)); }
+  #texture-control { bottom: max(20px, env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) { button { transition: none !important; } }
+
+#texture-menu {
+  position: fixed; inset: auto auto max(76px, calc(env(safe-area-inset-bottom) + 52px)) 50%;
+  transform: translateX(-50%); width: 244px; max-height: min(360px, 60vh); margin: 0; padding: 6px;
+  overflow-y: auto; border: 1px solid #e9edf0; border-radius: 18px; background: #fff;
+  box-shadow: 0 12px 36px #23323e12, 0 2px 6px #23323e06;
+}
+#texture-menu button {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px;
+  padding: 10px 12px; border: 0; border-radius: 12px; background: transparent;
+  font: inherit; font-size: 14px; text-align: left; color: #536570; cursor: pointer;
+}
+#texture-menu button[aria-checked=true] { color: #243b49; font-weight: 600; }
+#texture-menu button[aria-checked=true]::after { content: '✓'; font-size: 15px; margin-left: 12px; }
+#texture-menu button:hover, #texture-menu button:focus-visible { outline: none; background: #f0f4f6; }

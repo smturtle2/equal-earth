@@ -45,15 +45,10 @@ export function invert(x: number, y: number): [number, number] | null {
     : null;
 }
 
-export function fitScale(width: number, height: number): number {
-  const padding = Math.min(width, height) * 0.07;
-  return Math.min((width - 2 * padding) / (2 * MAX_X), (height - 2 * padding) / (2 * MAX_Y));
-}
-
-export function createRows(height: number, scale: number, samples = 1): Float32Array<ArrayBuffer> {
+export function createRows(height: number, scale: number, samples = 1, centerY = height / 2): Float32Array<ArrayBuffer> {
   const rows = new Float32Array(height * samples * 4);
   for (let row = 0; row < height * samples; row++) {
-    const y = (height / 2 - (row + 0.5) / samples) / scale;
+    const y = (centerY - (row + 0.5) / samples) / scale;
     const [sinLatitude, cosLatitude, coefficient] = inverseRow(y);
     // Outside samples belong to the background, never to a clamped sphere point.
     rows.set([sinLatitude, cosLatitude, coefficient, Math.abs(y) <= MAX_Y ? 1 : 0], row * 4);
