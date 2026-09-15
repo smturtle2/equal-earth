@@ -4,6 +4,8 @@ import { Attitude } from '../../src/attitude';
 import { invert } from '../../src/projection';
 import { mapLayout } from '../../src/layout';
 
+test.use({ locale: 'ko-KR' });
+
 // A known lon/lat raster lets us verify geographic lookup, source seam wrapping,
 // linear-light filtering and rotation against GPU readback, independent of JPEGs.
 const TW = 128, TH = 64;

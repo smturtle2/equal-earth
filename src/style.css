@@ -84,3 +84,18 @@ button { -webkit-tap-highlight-color: transparent; }
 #texture-menu button[aria-checked=true] { color: #243b49; font-weight: 600; }
 #texture-menu button[aria-checked=true]::after { content: '✓'; font-size: 15px; margin-left: 12px; }
 #texture-menu button:hover, #texture-menu button:focus-visible { outline: none; background: #f0f4f6; }
+
+#help-panel {
+  position: fixed; left: max(24px, env(safe-area-inset-left)); bottom: max(26px, env(safe-area-inset-bottom));
+  max-width: calc(50vw - 150px); color: #6b7e8b; font-size: 11px; line-height: 1.9;
+  pointer-events: none;
+}
+#help-panel span { display: block; }
+#help-touch { display: none; }
+@media (pointer: coarse) {
+  #help-mouse { display: none; }
+  #help-touch { display: block; }
+}
+@media (max-width: 900px) {
+  #help-panel { left: max(16px, env(safe-area-inset-left)); bottom: max(86px, calc(env(safe-area-inset-bottom) + 70px)); max-width: calc(100vw - 204px); }
+}

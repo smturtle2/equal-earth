@@ -1,3 +1,4 @@
+import { text, localizeDocument } from './i18n';
 import './style.css';
 import { Motion } from './motion';
 import { bindInteraction } from './interaction';
@@ -6,6 +7,8 @@ import type { TextureId } from './textures';
 import { createTextureControls } from './texture-controls';
 import { bindGlobeControls } from './globe-controls';
 import { GLOBE_RADIUS_RATIO } from './layout';
+
+localizeDocument();
 
 const canvas = document.querySelector<HTMLCanvasElement>('#map')!;
 const globeCanvas = document.querySelector<HTMLCanvasElement>('#globe')!;
@@ -32,7 +35,7 @@ function showFailure(text: string): void {
 try {
   const renderer = await createRenderer(canvas, globeCanvas, showFailure);
   let selected: TextureId = 'natural-earth';
-  textureControls.setStatus('지도를 불러오는 중…');
+  textureControls.setStatus(text.loading);
   try {
     await renderer.setTexture(selected);
   } catch (error) {
@@ -62,7 +65,7 @@ try {
   let selectionRequest = 0;
   textureControls.onChange(async (id) => {
     const request = ++selectionRequest;
-    textureControls.setStatus('지도를 불러오는 중…');
+    textureControls.setStatus(text.loading);
     textureControls.setBusy(true);
     try {
       if (!await renderer.setTexture(id) || request !== selectionRequest) return;
@@ -73,7 +76,7 @@ try {
     } catch (error) {
       if (request !== selectionRequest || failed) return;
       textureControls.setSelection(selected);
-      textureControls.setStatus(error instanceof Error ? error.message : '이미지를 불러오지 못했습니다. 다시 선택해 주세요.', true);
+      textureControls.setStatus(error instanceof Error ? error.message : text.retry, true);
     } finally {
       if (request === selectionRequest) textureControls.setBusy(false);
     }
@@ -81,7 +84,7 @@ try {
   bindGlobeControls((layer) => {
     renderer.setGlobeLayer(layer);
     globeCanvas.dataset.layer = layer;
-    globeCanvas.setAttribute('aria-label', `${layer === 'map' ? '지도 텍스처' : '위도·경도'} 지구본. 지도와 함께 회전합니다. 드래그 또는 방향키로 회전, Q와 E로 비틀기.`);
+    globeCanvas.setAttribute('aria-label', layer === 'map' ? text.globeMap : text.globeGrid);
     invalidate();
   });
   bindInteraction([{ canvas, zoom: true }, { canvas: globeCanvas, zoom: false, radiusRatio: GLOBE_RADIUS_RATIO }], motion, invalidate);
@@ -97,5 +100,5 @@ try {
   invalidate();
 } catch (error) {
   console.error(error);
-  showFailure(error instanceof Error ? error.message : '지도를 불러오지 못했습니다.');
+  showFailure(error instanceof Error ? error.message : text.mapFailed);
 }

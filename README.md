@@ -22,6 +22,8 @@ An interactive Equal Earth map that lets you choose the center. Rotate the world
 - **Two Earth textures** — switch between Natural Earth II and NASA Blue Marble at 8192 × 4096 resolution.
 - **Mouse, touch, and keyboard** — rotate either view; zoom the flat map independently.
 
+The interface follows your browser’s language preferences: Korean or English, with English as the fallback.
+
 Requires a browser with WebGPU enabled.
 
 ## Controls
@@ -34,6 +36,8 @@ Requires a browser with WebGPU enabled.
 | Two-finger gesture | Rotate, twist, and zoom |
 | 0 / Home / double-click | Reset the view |
 | Globe layer button | Toggle the graticule or current Earth texture |
+
+Quick controls are shown in the lower-left corner, with touch hints on touch devices.
 
 Choose a texture from the dropdown below the map. Switching textures preserves the view.
 

@@ -1,3 +1,4 @@
+import { text } from './i18n';
 import { mat4, quat } from 'gl-matrix';
 import type { Attitude } from './attitude';
 import { createRows } from './projection';
@@ -12,19 +13,19 @@ import { createGlobeRenderer, type GlobeLayer } from './globe-renderer';
 const SAMPLE_GRID = 4;
 
 export async function createRenderer(canvas: HTMLCanvasElement, globeCanvas: HTMLCanvasElement, onFailure: (message: string) => void) {
-  if (!navigator.gpu) throw new Error('WebGPU를 사용할 수 있는 브라우저에서 열어 주세요.');
+  if (!navigator.gpu) throw new Error(text.webgpu);
   const adapter = await navigator.gpu.requestAdapter();
-  if (!adapter) throw new Error('이 환경에서 WebGPU를 사용할 수 없습니다.');
+  if (!adapter) throw new Error(text.adapter);
   const device = await adapter.requestDevice();
   const context = canvas.getContext('webgpu');
-  if (!context) { device.destroy(); throw new Error('WebGPU 화면을 만들 수 없습니다.'); }
+  if (!context) { device.destroy(); throw new Error(text.mapSurface); }
 
   device.addEventListener('uncapturederror', (event) => {
     console.error(event.error);
-    onFailure('지도를 그리지 못했습니다. 새로고침해 주세요.');
+    onFailure(text.drawFailed);
   });
   void device.lost.then((info) => {
-    if (info.reason !== 'destroyed') onFailure('그래픽 연결이 끊겼습니다. 새로고침해 주세요.');
+    if (info.reason !== 'destroyed') onFailure(text.deviceLost);
   });
 
   const format = navigator.gpu.getPreferredCanvasFormat();

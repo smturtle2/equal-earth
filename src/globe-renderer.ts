@@ -1,3 +1,4 @@
+import { text } from './i18n';
 import { mat4, quat } from 'gl-matrix';
 import type { Attitude } from './attitude';
 import { GLOBE_RADIUS_RATIO } from './layout';
@@ -10,7 +11,7 @@ export type GlobeLayer = 'graticule' | 'map';
 // A second view on the same device and texture, with its own projection and layer.
 export async function createGlobeRenderer(device: GPUDevice, canvas: HTMLCanvasElement, format: GPUTextureFormat, sampler: GPUSampler) {
   const context = canvas.getContext('webgpu');
-  if (!context) throw new Error('지구본 화면을 만들 수 없습니다.');
+  if (!context) throw new Error(text.globeSurface);
   context.configure({ device, format, alphaMode: 'premultiplied' });
   const module = device.createShaderModule({ code: fullscreen + earth + globe });
   const pipeline = await device.createRenderPipelineAsync({ label: 'synchronized globe', layout: 'auto',
