@@ -29,18 +29,52 @@ export class Motion {
   private rampDuration = 0;
   private settleStart: quat | undefined;
   private settleElapsed = 0;
+  private journey: { from: quat; elapsed: number; duration: number } | undefined;
 
   constructor(now = performance.now()) { this.lastTime = now; }
 
   get moving(): boolean {
-    return this.goalVelocity !== 0 || this.rampElapsed < this.rampDuration || !!this.settleStart
+    return this.traveling || this.goalVelocity !== 0 || this.rampElapsed < this.rampDuration || !!this.settleStart
       || (this.dragging && separation(this.attitude.rotation, this.target.rotation) > ROTATION_EPSILON_SQUARED);
+  }
+
+  get traveling(): boolean { return !!this.journey; }
+
+  centerOn(latitude: number, longitude: number, now: number, reducedMotion = false): void {
+    this.advance(now);
+    this.stop(now);
+    this.target.centerOn(latitude, longitude);
+    const angle = 2 * Math.acos(Math.min(1, Math.abs(quat.dot(this.attitude.rotation, this.target.rotation))));
+    if (reducedMotion || separation(this.attitude.rotation, this.target.rotation) <= ROTATION_EPSILON_SQUARED) {
+      quat.copy(this.attitude.rotation, this.target.rotation);
+    } else {
+      this.journey = { from: quat.clone(this.attitude.rotation), elapsed: 0, duration: 0.45 + angle / Math.PI * 0.75 };
+    }
+  }
+
+  private interruptJourney(now: number): void {
+    if (!this.journey) return;
+    this.advance(now);
+    this.journey = undefined;
+    quat.copy(this.target.rotation, this.attitude.rotation);
   }
 
   advance(now: number): void {
     const dt = Math.max(0, now - this.lastTime) / 1000;
     this.lastTime = Math.max(now, this.lastTime);
     if (!dt) return;
+
+    if (this.journey) {
+      this.journey.elapsed += dt;
+      const t = Math.min(1, this.journey.elapsed / this.journey.duration);
+      quat.slerp(this.attitude.rotation, this.journey.from, this.target.rotation, t * t * (3 - 2 * t));
+      quat.normalize(this.attitude.rotation, this.attitude.rotation);
+      if (t === 1) {
+        quat.copy(this.attitude.rotation, this.target.rotation);
+        this.journey = undefined;
+      }
+      return;
+    }
 
     // Exact integral of a smoothstep velocity ramp: independent of frame frequency.
     let angle = 0;
@@ -85,6 +119,7 @@ export class Motion {
   }
 
   setRollKey(key: 'q' | 'e', down: boolean, fast: boolean, now: number): void {
+    if (down) this.interruptJourney(now);
     this.advance(now);
     if (down) this.keys.add(key); else this.keys.delete(key);
     this.fast = fast;
@@ -108,6 +143,7 @@ export class Motion {
   }
 
   beginDrag(now: number): void {
+    this.interruptJourney(now);
     this.advance(now);
     quat.copy(this.target.rotation, this.attitude.rotation);
     this.settleStart = undefined;
@@ -120,6 +156,7 @@ export class Motion {
   }
 
   rotate(axis: Axis, angle: number, now: number): void {
+    this.interruptJourney(now);
     this.advance(now);
     this.target.rotate(axis, angle);
     if (!this.dragging) this.settle();
@@ -137,7 +174,10 @@ export class Motion {
     this.settleElapsed = 0;
   }
 
-  magnify(factor: number): void { this.attitude.magnify(factor); }
+  magnify(factor: number, now = performance.now()): void {
+    this.interruptJourney(now);
+    this.attitude.magnify(factor);
+  }
 
   stop(now: number): void {
     // Freeze the displayed pose; never catch up time spent hidden or unfocused.
@@ -146,6 +186,7 @@ export class Motion {
     this.velocity = this.fromVelocity = this.goalVelocity = 0;
     this.rampElapsed = this.rampDuration = 0;
     this.settleStart = undefined;
+    this.journey = undefined;
     quat.copy(this.target.rotation, this.attitude.rotation);
     this.lastTime = now;
   }

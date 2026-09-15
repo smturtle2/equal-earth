@@ -16,33 +16,31 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 button { -webkit-tap-highlight-color: transparent; }
 #message { position: fixed; inset: 0; margin: 0; padding: 32px; place-content: center; text-align: center; color: #60716a; font-size: 14px; line-height: 1.7; }
 #message:not([hidden]) { display: grid; }
-#texture-control, #globe-layers-button {
+#texture-control, #globe-layers-button, #download, #locate {
   background: var(--control-surface);
   box-shadow: var(--control-shadow);
 }
-#texture-control {
+#map-controls {
   position: fixed; bottom: max(24px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
-  border-radius: 16px;
+  display: flex; align-items: center; gap: 12px;
 }
+#texture-control { position: relative; border-radius: 16px; }
 #texture {
-  display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 220px; height: 44px; padding: 0 16px; border: 0; border-radius: 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; width: min(220px, calc(100vw - 144px)); height: 44px; padding: 0 16px; border: 0; border-radius: 16px;
   font: inherit; font-size: 14px; font-weight: 500; letter-spacing: -.2px;
   color: #24333e; background: transparent; cursor: pointer;
 }
 #texture:hover, #texture[aria-expanded=true] { background: var(--control-hover); }
-#texture:disabled, #globe-layers-button:disabled { cursor: default; opacity: .5; }
+#texture:disabled, #globe-layers-button:disabled, #download:disabled, #locate:disabled { cursor: default; opacity: .5; }
 .select-chevron { flex: none; fill: none; stroke: #6b7e8b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
-#texture-loading { display: none; flex: none; width: 16px; height: 16px; align-items: center; justify-content: space-between; }
+.loading-dots { display: none; flex: none; width: 16px; height: 16px; align-items: center; justify-content: space-between; }
 #texture-control[aria-busy=true] .select-chevron { display: none; }
-#texture-control[aria-busy=true] #texture-loading { display: flex; }
-#texture-loading span { width: 3px; height: 3px; border-radius: 50%; background: currentColor; animation: texture-loading 1.2s ease-in-out infinite; }
-#texture-loading span:nth-child(2) { animation-delay: .15s; }
-#texture-loading span:nth-child(3) { animation-delay: .3s; }
+#texture-control[aria-busy=true] .loading-dots { display: flex; }
+.loading-dots span { width: 3px; height: 3px; border-radius: 50%; background: currentColor; animation: texture-loading 1.2s ease-in-out infinite; }
+.loading-dots span:nth-child(2) { animation-delay: .15s; }
+.loading-dots span:nth-child(3) { animation-delay: .3s; }
 @keyframes texture-loading { 0%, 60%, 100% { opacity: .3; } 30% { opacity: 1; } }
-#texture:focus-visible, #globe-layers-button:focus-visible { outline: 2px solid #92a9b9; outline-offset: 3px; }
-#texture-status { position: absolute; }
-#texture-status:not([data-error=true]) { width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-#texture-status[data-error=true] { bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); width: min(340px, 90vw); text-align: center; color: #8f4b42; font-size: 13px; line-height: 1.5; }
+#texture:focus-visible, #globe-layers-button:focus-visible, #download:focus-visible, #locate:focus-visible { outline: 2px solid #92a9b9; outline-offset: 3px; }
 #globe-panel {
   position: fixed; right: max(24px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom));
   width: var(--globe-width); padding: 10px; border: 1px solid transparent; background: transparent;
@@ -60,18 +58,18 @@ button { -webkit-tap-highlight-color: transparent; }
 #globe-layers-button[aria-pressed=true]:hover { background: #e6eef3; }
 #globe-layers-button svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
 #globe-layers-button[aria-pressed=true] svg { stroke-width: 1.8; }
-@media (max-width: 640px) {
+@media (max-width: 800px) {
   :root { --globe-width: 176px; }
   #globe-panel { right: max(16px, env(safe-area-inset-right)); bottom: max(84px, calc(env(safe-area-inset-bottom) + 68px)); }
-  #texture-control { bottom: max(20px, env(safe-area-inset-bottom)); }
+  #map-controls { bottom: max(20px, env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) {
   button { transition: none !important; }
-  #texture-loading span { animation: none; }
+  .loading-dots span { animation: none; }
 }
 
 #texture-menu {
-  position: fixed; inset: auto auto max(76px, calc(env(safe-area-inset-bottom) + 52px)) 50%;
+  position: fixed; inset: auto auto max(76px, calc(env(safe-area-inset-bottom) + 52px)) max(138px, calc(50% - 56px));
   transform: translateX(-50%); width: 244px; max-height: min(360px, 60vh); margin: 0; padding: 6px;
   overflow-y: auto; border: 1px solid #e9edf0; border-radius: 18px; background: #fff;
   box-shadow: 0 12px 36px #23323e12, 0 2px 6px #23323e06;
@@ -87,7 +85,7 @@ button { -webkit-tap-highlight-color: transparent; }
 
 #help-panel {
   position: fixed; left: max(24px, env(safe-area-inset-left)); bottom: max(26px, env(safe-area-inset-bottom));
-  max-width: calc(50vw - 150px); color: #6b7e8b; font-size: 11px; line-height: 1.9;
+  max-width: calc(50vw - 178px); color: #6b7e8b; font-size: 14px; line-height: 1.7;
   pointer-events: none;
 }
 #help-panel span { display: block; }
@@ -99,3 +97,12 @@ button { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 900px) {
   #help-panel { left: max(16px, env(safe-area-inset-left)); bottom: max(86px, calc(env(safe-area-inset-bottom) + 70px)); max-width: calc(100vw - 204px); }
 }
+
+#download, #locate { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 16px; color: #6b7e8b; cursor: pointer; }
+#download:hover, #locate:hover { background: var(--control-hover); }
+.download-icon, .location-icon { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+#download[aria-busy=true] .download-icon, #locate[aria-busy=true] .location-icon { display: none; }
+#download[aria-busy=true] .loading-dots, #locate[aria-busy=true] .loading-dots { display: flex; }
+#control-statuses { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); display: grid; gap: 6px; width: min(340px, calc(100vw - 32px)); text-align: center; color: #8f4b42; font-size: 13px; line-height: 1.5; }
+#control-statuses > :not([data-error=true]) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#location-marker { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 9px; height: 9px; border: 2px solid white; border-radius: 50%; background: #33769b; box-shadow: 0 0 0 1px #243b4966; pointer-events: none; }

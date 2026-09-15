@@ -1,6 +1,6 @@
 # Equal Earth
 
-[![Equal Earth map centered on the Pacific](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+[![Equal Earth map in the default view](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
 
 <p align="center">
   <a href="https://smturtle2.github.io/equal-earth/"><strong>Open map</strong></a> ·
@@ -39,7 +39,11 @@ Requires a browser with WebGPU enabled.
 
 Quick controls are shown in the lower-left corner, with touch hints on touch devices.
 
+The location button requests browser permission only when clicked, then moves the center along the shortest great-circle path while keeping the current zoom. Manual map or globe input cancels a pending move. The app does not save your position.
+
 Choose a texture from the dropdown below the map. Switching textures preserves the view.
+
+Use the download button next to it to save a PNG with a 4,096-pixel long edge. The image keeps the rotation, zoom, texture, and aspect ratio at the moment you click. It includes the large map on a transparent background, with the controls and small globe omitted. Image generation runs in your browser.
 
 ## Development
 

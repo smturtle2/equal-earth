@@ -3,10 +3,11 @@ import type { Motion } from './motion';
 type Point = [number, number];
 type Surface = { canvas: HTMLCanvasElement; zoom: boolean; radiusRatio?: number };
 
-export function bindInteraction(surfaces: Surface[], motion: Motion, invalidate: () => void): void {
+export function bindInteraction(surfaces: Surface[], motion: Motion, invalidate: () => void,
+  onInterrupt: (userInput: boolean) => void = () => {}): void {
   const clearAll: (() => void)[] = [];
-  const cancel = () => { clearAll.forEach(clear => clear()); motion.stop(performance.now()); invalidate(); };
-  const reset = () => { clearAll.forEach(clear => clear()); motion.reset(performance.now()); invalidate(); };
+  const cancel = () => { onInterrupt(false); clearAll.forEach(clear => clear()); motion.stop(performance.now()); invalidate(); };
+  const reset = () => { onInterrupt(true); clearAll.forEach(clear => clear()); motion.reset(performance.now()); invalidate(); };
   window.addEventListener('blur', cancel);
   document.addEventListener('visibilitychange', () => { if (document.hidden) cancel(); });
   for (const { canvas, zoom, radiusRatio = 0.6 } of surfaces) {
@@ -15,6 +16,7 @@ export function bindInteraction(surfaces: Surface[], motion: Motion, invalidate:
 
     canvas.addEventListener('pointerdown', (event) => {
       if (event.button !== 0) return;
+      onInterrupt(true);
       canvas.focus({ preventScroll: true });
       if (!pointers.size) motion.beginDrag(performance.now());
       pointers.set(event.pointerId, [event.offsetX, event.offsetY]);
@@ -69,6 +71,7 @@ export function bindInteraction(surfaces: Surface[], motion: Motion, invalidate:
     canvas.addEventListener('wheel', (event) => {
       event.preventDefault();
       if (!zoom) return;
+      onInterrupt(true);
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? canvas.clientHeight : 1;
       motion.magnify(Math.exp(-event.deltaY * unit * 0.0015));
       invalidate();
@@ -79,6 +82,8 @@ export function bindInteraction(surfaces: Surface[], motion: Motion, invalidate:
       if (event.ctrlKey || event.metaKey || event.altKey) return;
       const angle = event.shiftKey ? 0.15 : 0.06;
       const now = performance.now();
+      if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'q', 'e', '0', 'home'].includes(event.key.toLowerCase())
+        || (zoom && ['+', '=', '-'].includes(event.key))) onInterrupt(true);
       switch (event.key.toLowerCase()) {
         case 'arrowleft': motion.rotate([0, 1, 0], -angle, now); break;
         case 'arrowright': motion.rotate([0, 1, 0], angle, now); break;

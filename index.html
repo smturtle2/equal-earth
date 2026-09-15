@@ -14,7 +14,7 @@
     <meta property="og:image" content="https://smturtle2.github.io/equal-earth/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="태평양을 중심으로 배치한 Equal Earth 세계지도" />
+    <meta property="og:image:alt" content="기본 시점의 Equal Earth 세계지도" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Equal Earth — 중심을 바꿔 보는 세계지도" />
     <meta name="twitter:description" content="지도와 지구본을 자유롭게 회전하며 원하는 중심에서 세계를 보세요." />
@@ -24,14 +24,29 @@
   </head>
   <body>
     <canvas id="map" tabindex="0" role="img" aria-label="Equal Earth 지도. 드래그로 회전, Shift 드래그 또는 Q와 E로 비틀기, 휠로 확대. 방향키로 회전, 0 또는 더블 클릭으로 초기화." aria-busy="true"></canvas>
-    <div id="texture-control" role="group" aria-label="지도 텍스처" aria-busy="true">
-      <button id="texture" type="button" aria-label="지도 텍스처" aria-haspopup="menu" aria-controls="texture-menu" aria-expanded="false" popovertarget="texture-menu" disabled>
-        <span id="texture-label"></span>
-        <svg class="select-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
-        <span id="texture-loading" aria-hidden="true"><span></span><span></span><span></span></span>
+    <span id="location-marker" aria-hidden="true" hidden></span>
+    <div id="map-controls">
+      <div id="texture-control" role="group" aria-label="지도 텍스처" aria-busy="true">
+        <button id="texture" type="button" aria-label="지도 텍스처" aria-haspopup="menu" aria-controls="texture-menu" aria-expanded="false" popovertarget="texture-menu" disabled>
+          <span id="texture-label"></span>
+          <svg class="select-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+          <span id="texture-loading" class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <div id="texture-menu" role="menu" aria-label="지도 텍스처 목록" popover></div>
+      </div>
+      <button id="download" type="button" aria-label="지도 4K PNG 다운로드" aria-busy="false" disabled>
+        <svg class="download-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></svg>
+        <span id="download-loading" class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
       </button>
-      <div id="texture-menu" role="menu" aria-label="지도 텍스처 목록" popover></div>
-      <span id="texture-status" role="status"></span>
+      <button id="locate" type="button" aria-label="내 위치로 이동" aria-busy="false" disabled>
+        <svg class="location-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
+        <span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+      <div id="control-statuses">
+        <span id="texture-status" role="status"></span>
+        <span id="download-status" role="status"></span>
+        <span id="location-status" role="status"></span>
+      </div>
     </div>
     <aside id="help-panel" role="note" aria-label="조작법">
       <div id="help-mouse"></div>

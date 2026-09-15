@@ -5,6 +5,8 @@ import { bindInteraction } from './interaction';
 import { createRenderer } from './renderer';
 import type { TextureId } from './textures';
 import { createTextureControls } from './texture-controls';
+import { createDownloadControls } from './download-controls';
+import { createLocationControls } from './location-controls';
 import { bindGlobeControls } from './globe-controls';
 import { GLOBE_RADIUS_RATIO } from './layout';
 
@@ -15,6 +17,8 @@ const globeCanvas = document.querySelector<HTMLCanvasElement>('#globe')!;
 const globeButton = document.querySelector<HTMLButtonElement>('#globe-layers-button')!;
 const message = document.querySelector<HTMLParagraphElement>('#message')!;
 const textureControls = createTextureControls();
+const downloadControls = createDownloadControls();
+const locationControls = createLocationControls();
 const motion = new Motion();
 let failed = false;
 
@@ -27,6 +31,8 @@ function showFailure(text: string): void {
   globeCanvas.dataset.state = 'error';
   globeCanvas.setAttribute('aria-busy', 'false');
   globeButton.disabled = true;
+  downloadControls.setEnabled(false);
+  locationControls.setEnabled(false);
   textureControls.setEnabled(false);
   textureControls.setBusy(false);
   textureControls.setStatus('');
@@ -47,6 +53,14 @@ try {
   textureControls.setEnabled(true);
   textureControls.setBusy(false);
   globeButton.disabled = false;
+  downloadControls.onDownload(async () => {
+    const texture = selected;
+    const date = new Date().toISOString().replace(/[:.]/g, '-');
+    const { blob, width, height } = await renderer.exportPNG(motion.attitude);
+    const name = `equal-earth-${texture}-${width}x${height}-${date}.png`;
+    return { blob, name };
+  });
+  downloadControls.setEnabled(true);
   let pendingFrame: number | null = null;
   const invalidate = () => {
     if (failed || pendingFrame !== null || document.hidden) return;
@@ -55,6 +69,7 @@ try {
       if (failed || document.hidden) return;
       motion.advance(now);
       renderer.draw(motion.attitude);
+      if (!motion.traveling) locationControls.arrive();
       canvas.setAttribute('aria-busy', 'false');
       canvas.dataset.state = 'ready';
       globeCanvas.setAttribute('aria-busy', 'false');
@@ -62,11 +77,17 @@ try {
       if (motion.moving) invalidate();
     });
   };
+  locationControls.onLocate((latitude, longitude) => {
+    motion.centerOn(latitude, longitude, performance.now(), matchMedia('(prefers-reduced-motion: reduce)').matches);
+    invalidate();
+  });
+  locationControls.setEnabled(true);
   let selectionRequest = 0;
   textureControls.onChange(async (id) => {
     const request = ++selectionRequest;
     textureControls.setStatus(text.loading);
     textureControls.setBusy(true);
+    downloadControls.setEnabled(false);
     try {
       if (!await renderer.setTexture(id) || request !== selectionRequest) return;
       selected = id;
@@ -78,7 +99,10 @@ try {
       textureControls.setSelection(selected);
       textureControls.setStatus(error instanceof Error ? error.message : text.retry, true);
     } finally {
-      if (request === selectionRequest) textureControls.setBusy(false);
+      if (request === selectionRequest) {
+        textureControls.setBusy(false);
+        downloadControls.setEnabled(!failed);
+      }
     }
   });
   bindGlobeControls((layer) => {
@@ -87,11 +111,15 @@ try {
     globeCanvas.setAttribute('aria-label', layer === 'map' ? text.globeMap : text.globeGrid);
     invalidate();
   });
-  bindInteraction([{ canvas, zoom: true }, { canvas: globeCanvas, zoom: false, radiusRatio: GLOBE_RADIUS_RATIO }], motion, invalidate);
+  bindInteraction([{ canvas, zoom: true }, { canvas: globeCanvas, zoom: false, radiusRatio: GLOBE_RADIUS_RATIO }],
+    motion, invalidate, locationControls.cancel);
   const resizeObserver = new ResizeObserver(invalidate);
   resizeObserver.observe(canvas);
   resizeObserver.observe(globeCanvas);
-  document.addEventListener('visibilitychange', invalidate);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) locationControls.cancel();
+    invalidate();
+  });
   window.addEventListener('resize', invalidate);
   window.addEventListener('pagehide', (event) => {
     if (!event.persisted) renderer.destroy();

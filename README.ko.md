@@ -1,6 +1,6 @@
 # Equal Earth
 
-[![태평양을 중심으로 렌더링한 Equal Earth 지도](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+[![기본 시점으로 렌더링한 Equal Earth 지도](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
 
 <p align="center">
   <a href="https://smturtle2.github.io/equal-earth/"><strong>지도 열기</strong></a> ·
@@ -39,7 +39,11 @@ WebGPU를 사용할 수 있는 브라우저가 필요합니다.
 
 왼쪽 아래에 핵심 조작법을 표시하며, 터치 기기에서는 터치 조작을 안내합니다.
 
+위치 버튼은 클릭할 때만 브라우저 권한을 요청하며, 현재 확대 수준을 유지한 채 최단 대권 경로로 중심을 이동합니다. 지도나 지구본을 직접 조작하면 진행 중인 이동이 취소됩니다. 앱은 위치를 저장하지 않습니다.
+
 지도 아래 드롭다운에서 텍스처를 선택합니다. 전환해도 현재 시점은 유지됩니다.
+
+옆의 다운로드 버튼으로 긴 변이 4,096픽셀인 PNG를 저장합니다. 누른 순간의 회전·확대·텍스처·화면 비율을 유지하며, 투명 배경의 큰 지도만 담고 조작 UI와 작은 지구본은 제외합니다. 이미지는 브라우저에서 생성합니다.
 
 ## 개발
 

@@ -7,8 +7,10 @@ export class Attitude {
   constructor() { this.reset(); }
 
   reset(): void {
-    // Start over the Pacific; no north-up constraint is applied after this.
-    quat.setAxisAngle(this.rotation, [0, 1, 0], -135 * Math.PI / 180);
+    // Preserve the chosen view, including its tilt and roll, on load and reset.
+    quat.set(this.rotation,
+      0.4176124632358551, -0.19188641011714935,
+      -0.5339241623878479, 0.7097213864326477);
     this.zoom = 1;
   }
 
@@ -16,6 +18,18 @@ export class Attitude {
     const change = quat.setAxisAngle(quat.create(), axis, angle);
     quat.multiply(this.rotation, change, this.rotation);
     quat.normalize(this.rotation, this.rotation);
+  }
+
+  centerOn(latitude: number, longitude: number): void {
+    const lat = latitude * Math.PI / 180, lon = longitude * Math.PI / 180;
+    const point = vec3.transformQuat(vec3.create(),
+      [Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon)], this.rotation);
+    // The shortest swing to screen-forward transports the view along a great
+    // circle without adding roll. At the exact antipode, choose a stable axis.
+    const length = Math.hypot(point[0], point[1]);
+    const axis: [number, number, number] = length > 1e-8
+      ? [point[1] / length, -point[0] / length, 0] : [0, 1, 0];
+    this.rotate(axis, Math.atan2(length, point[2]));
   }
 
   drag(from: [number, number], to: [number, number], width: number, height: number, radiusRatio = 0.6): void {

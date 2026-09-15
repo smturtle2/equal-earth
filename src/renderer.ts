@@ -1,16 +1,12 @@
 import { text } from './i18n';
-import { mat4, quat } from 'gl-matrix';
+import { quat } from 'gl-matrix';
 import type { Attitude } from './attitude';
-import { createRows } from './projection';
-import { mapLayout } from './layout';
-import shader from './map.wgsl?raw';
-import earth from './earth.wgsl?raw';
+import { createMapFrame, createMapPipeline, frameLayout } from './map-frame';
+import { exportMapPNG, EXPORT_LONG_EDGE } from './map-export';
 import presentation from './present.wgsl?raw';
 import fullscreen from './fullscreen.wgsl?raw';
 import { loadTexture, type TextureId } from './textures';
 import { createGlobeRenderer, type GlobeLayer } from './globe-renderer';
-
-const SAMPLE_GRID = 4;
 
 export async function createRenderer(canvas: HTMLCanvasElement, globeCanvas: HTMLCanvasElement, onFailure: (message: string) => void) {
   if (!navigator.gpu) throw new Error(text.webgpu);
@@ -38,26 +34,16 @@ export async function createRenderer(canvas: HTMLCanvasElement, globeCanvas: HTM
       fragment: { module, entryPoint: 'fragmentMain', targets: [{ format }] },
       primitive: { topology: 'triangle-list' },
     }),
-    device.createComputePipelineAsync({
-      label: 'earth texture integration', layout: 'auto',
-      compute: { module: device.createShaderModule({ code: earth + '\n' + shader }),
-        entryPoint: 'computeMain', constants: { SAMPLE_GRID } },
-    }),
+    createMapPipeline(device),
   ]);
-  const uniform = device.createBuffer({ size: 80, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const values = new Float32Array(20);
-  const inverse = quat.create();
-  const matrix = mat4.create();
-  let rowBuffer: GPUBuffer | undefined;
-  let frame: GPUTexture | undefined;
   let bindings: GPUBindGroup;
-  let computeBindings: GPUBindGroup;
-  let lastShape = '';
+  let presentedFrame: GPUTexture | undefined;
   let disposed = false;
   let earthTexture: GPUTexture | undefined;
   let loading: AbortController | undefined;
   const sampler = device.createSampler({ addressModeU: 'repeat', addressModeV: 'clamp-to-edge',
     magFilter: 'linear', minFilter: 'linear' });
+  const map = createMapFrame(device, computePipeline, sampler);
   const globe = await createGlobeRenderer(device, globeCanvas, format, sampler);
   let globeLayer: GlobeLayer = 'graticule';
 
@@ -72,7 +58,6 @@ export async function createRenderer(canvas: HTMLCanvasElement, globeCanvas: HTM
         if (disposed || request.signal.aborted) { texture.destroy(); return false; }
         earthTexture?.destroy();
         earthTexture = texture;
-        lastShape = '';
         return true;
       } catch (error) {
         if (request.signal.aborted) return false;
@@ -85,51 +70,17 @@ export async function createRenderer(canvas: HTMLCanvasElement, globeCanvas: HTM
       const cssWidth = Math.max(1, canvas.clientWidth);
       const cssHeight = Math.max(1, canvas.clientHeight);
       const ratio = Math.min(devicePixelRatio || 1, device.limits.maxTextureDimension2D / Math.max(cssWidth, cssHeight));
-      const width = Math.max(1, Math.round(cssWidth * ratio));
-      const height = Math.max(1, Math.round(cssHeight * ratio));
-      const layout = mapLayout(cssWidth, cssHeight);
-      const scale = layout.scale * ratio * attitude.zoom;
-      const centerX = layout.x * ratio, centerY = layout.y * ratio;
-      const shape = `${width}:${height}:${scale}:${centerY}`;
-
-      if (shape !== lastShape) {
-        if (canvas.width !== width) canvas.width = width;
-        if (canvas.height !== height) canvas.height = height;
-        const rows = createRows(height, scale, SAMPLE_GRID, centerY);
-        if (!rowBuffer || rowBuffer.size !== rows.byteLength) {
-          rowBuffer?.destroy();
-          rowBuffer = device.createBuffer({ size: rows.byteLength, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
-        }
-        if (!frame || frame.width !== width || frame.height !== height) {
-          frame?.destroy();
-          frame = device.createTexture({ label: 'integrated pixels', size: [width, height], format: 'rgba8unorm',
-            usage: GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.TEXTURE_BINDING });
-          bindings = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [
-            { binding: 0, resource: frame.createView() },
-          ] });
-        }
-        computeBindings = device.createBindGroup({ layout: computePipeline.getBindGroupLayout(0), entries: [
-          { binding: 0, resource: { buffer: uniform } },
-          { binding: 1, resource: { buffer: rowBuffer } },
-          { binding: 2, resource: frame.createView() },
-          { binding: 3, resource: earthTexture.createView() },
-          { binding: 4, resource: sampler },
-        ] });
-        device.queue.writeBuffer(rowBuffer, 0, rows);
-        lastShape = shape;
-      }
-
-      quat.conjugate(inverse, attitude.rotation);
-      mat4.fromQuat(matrix, inverse);
-      values.set(matrix);
-      values.set([centerX, centerY, scale, 0], 16);
-      device.queue.writeBuffer(uniform, 0, values);
+      const layout = frameLayout(cssWidth, cssHeight, ratio, attitude.zoom);
+      if (canvas.width !== layout.width) canvas.width = layout.width;
+      if (canvas.height !== layout.height) canvas.height = layout.height;
       const commands = device.createCommandEncoder();
-      const compute = commands.beginComputePass();
-      compute.setPipeline(computePipeline);
-      compute.setBindGroup(0, computeBindings);
-      compute.dispatchWorkgroups(Math.ceil(width / 8), Math.ceil(height / 8));
-      compute.end();
+      const frame = map.encode(commands, earthTexture, layout, attitude.rotation);
+      if (frame !== presentedFrame) {
+        bindings = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [
+          { binding: 0, resource: frame.createView() },
+        ] });
+        presentedFrame = frame;
+      }
       const pass = commands.beginRenderPass({ colorAttachments: [{
         view: context.getCurrentTexture().createView(),
         clearValue: { r: 1, g: 1, b: 1, a: 1 }, loadOp: 'clear', storeOp: 'store',
@@ -141,13 +92,18 @@ export async function createRenderer(canvas: HTMLCanvasElement, globeCanvas: HTM
       globe.draw(commands, attitude, earthTexture, globeLayer);
       device.queue.submit([commands.finish()]);
     },
+    async exportPNG(attitude: Attitude) {
+      if (disposed || !earthTexture) throw new Error(text.exportFailed);
+      const width = Math.max(1, canvas.clientWidth), height = Math.max(1, canvas.clientHeight);
+      const layout = frameLayout(width, height, EXPORT_LONG_EDGE / Math.max(width, height), attitude.zoom);
+      const blob = await exportMapPNG(device, computePipeline, sampler, earthTexture, layout, quat.clone(attitude.rotation));
+      return { blob, width: layout.width, height: layout.height };
+    },
     destroy() {
       disposed = true;
       loading?.abort();
       earthTexture?.destroy();
-      rowBuffer?.destroy();
-      uniform.destroy();
-      frame?.destroy();
+      map.destroy();
       globe.destroy();
       context.unconfigure();
       device.destroy();

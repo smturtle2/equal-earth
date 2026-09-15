@@ -1,3 +1,5 @@
+import { installGpuSurfaces, type TestSurface } from './gpu-surface';
+import { readFile } from 'node:fs/promises';
 import { test, expect, type Page } from '@playwright/test';
 import { mat4, quat, vec3 } from 'gl-matrix';
 import { Attitude } from '../../src/attitude';
@@ -41,15 +43,19 @@ function sampleRaster(direction: vec3): number[] {
   return color;
 }
 
-function referencePixel(x: number, y: number, width: number, height: number, attitude: Attitude): number[] {
+function referencePixel(x: number, y: number, width: number, height: number, attitude: Attitude, transparent = false, viewport = { width, height }): number[] {
   const inverse = quat.conjugate(quat.create(), attitude.rotation);
-  const layout = mapLayout(width, height);
-  const scale = layout.scale * attitude.zoom;
+  const ratio = Math.max(width, height) / Math.max(viewport.width, viewport.height);
+  const source = mapLayout(viewport.width, viewport.height);
+  const layout = { x: source.x * ratio, y: source.y * ratio };
+  const scale = source.scale * ratio * attitude.zoom;
   const result = [0, 0, 0];
+  let coverage = 0;
   for (let sy = 0; sy < 4; sy++) for (let sx = 0; sx < 4; sx++) {
     const point = invert((x + (sx + 0.5) / 4 - layout.x) / scale, (layout.y - y - (sy + 0.5) / 4) / scale);
-    let color = [1, 1, 1];
+    let color = transparent ? [0, 0, 0] : [1, 1, 1];
     if (point) {
+      coverage++;
       const [lon, lat] = point;
       const direction = vec3.transformQuat(vec3.create(), [Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon)], inverse);
       vec3.normalize(direction, direction);
@@ -57,6 +63,7 @@ function referencePixel(x: number, y: number, width: number, height: number, att
     }
     for (let i = 0; i < 3; i++) result[i] += color[i] / 16;
   }
+  if (transparent) return [...result.map(v => Math.round(encode(v * 16 / Math.max(coverage, 1)) * 255)), Math.round(coverage / 16 * 255)];
   return result.map(v => Math.round(encode(v) * 255));
 }
 
@@ -80,6 +87,7 @@ function referenceGlobe(x: number, y: number, width: number, height: number, att
 }
 
 async function installReadback(page: Page) {
+  await installGpuSurfaces(page);
   await page.addInitScript(() => {
     const stats = { submits: 0, contexts: [] as string[], rotation: [] as number[], rendered: { texture: '', layer: '' } };
     const submit = GPUQueue.prototype.submit;
@@ -103,27 +111,8 @@ async function installReadback(page: Page) {
       return getContext.call(this, kind as 'webgpu', ...args);
     } as typeof getContext;
 
-    // This headless Chromium cannot present WebGPU swapchain images. Render into
-    // a real GPU texture and read pixels back; the app's shader/pipeline is intact.
-    // Onscreen presentation is verified separately in regular Chrome.
-    const surfaces = new Map<GPUCanvasContext['canvas'], { device: GPUDevice; format: GPUTextureFormat; texture?: GPUTexture }>();
-    GPUCanvasContext.prototype.configure = function (config) {
-      surfaces.set(this.canvas, { device: config.device, format: config.format });
-    };
-    GPUCanvasContext.prototype.getCurrentTexture = function () {
-      const surface = surfaces.get(this.canvas)!;
-      const { device, format } = surface;
-      let { texture } = surface;
-      if (!texture || texture.width !== this.canvas.width || texture.height !== this.canvas.height) {
-        texture?.destroy();
-        texture = device.createTexture({ size: [this.canvas.width, this.canvas.height], format,
-          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
-        surface.texture = texture;
-      }
-      return texture;
-    };
     Object.assign(window, { mapTestStats: stats, readMap: async (id = 'map') => {
-      const { device, format, texture } = surfaces.get(document.getElementById(id) as HTMLCanvasElement)! as { device: GPUDevice; format: GPUTextureFormat; texture: GPUTexture };
+      const { device, format, texture } = (window as unknown as { gpuTestSurface: (id: string) => TestSurface & { texture: GPUTexture } }).gpuTestSurface(id);
       const rowBytes = Math.ceil(texture.width * 4 / 256) * 256;
       const buffer = device.createBuffer({ size: rowBytes * texture.height,
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
@@ -509,4 +498,69 @@ test('reports unavailable WebGPU without creating a fallback renderer', async ({
   await page.goto('/');
   await expect(page.locator('#map')).toHaveAttribute('data-state', 'error');
   await expect(page.locator('#message')).toContainText('WebGPU');
+});
+
+
+test('exports the captured view with accurate transparent 4K pixels and clean edges', async ({ page }, testInfo) => {
+  test.setTimeout(process.env.CI ? 150_000 : 75_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('**/textures/*.jpg', route => route.fulfill({ contentType: 'image/bmp', body: fixtureRaster() }));
+  await installReadback(page);
+  await page.goto('/');
+  const map = page.locator('#map');
+  await expect(map).toHaveAttribute('data-state', 'ready');
+  const captured = new Attitude();
+  captured.rotate([1, 0, 0], .15);
+  captured.magnify(1.12);
+  await map.press('Shift+ArrowDown');
+  await map.press('+');
+  await waitForPose(page, captured);
+  const bounds = await map.boundingBox();
+  const pending = page.waitForEvent('download');
+  await page.locator('#download').click();
+  // Changing the live view after clicking must not change the exported pose.
+  await map.press('0');
+  await waitForPose(page, new Attitude());
+  const download = await pending;
+  const file = testInfo.outputPath('map-4k.png');
+  await download.saveAs(file);
+  expect(await map.boundingBox()).toEqual(bounds);
+  const png = (await readFile(file)).toString('base64');
+  const image = await page.evaluate(async base64 => {
+    const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const context = canvas.getContext('2d')!;
+    context.drawImage(bitmap, 0, 0);
+    const probes = [];
+    for (const u of [.03, .25, .45, .62, .8, .97]) for (const v of [.04, .25, .5, .7, .96]) {
+      const x = Math.floor(u * bitmap.width), y = Math.floor(v * bitmap.height);
+      probes.push({ x, y, rgba: Array.from(context.getImageData(x, y, 1, 1).data) });
+    }
+    const data = context.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    const edges = [];
+    for (let y = 0; y < bitmap.height && edges.length < 16; y += 17) {
+      for (let x = 0; x < bitmap.width && edges.length < 16; x++) {
+        const i = (y * bitmap.width + x) * 4;
+        if (data[i + 3] >= 32 && data[i + 3] <= 224) edges.push({ x, y, rgba: Array.from(data.slice(i, i + 4)) });
+      }
+    }
+    const result = { width: bitmap.width, height: bitmap.height, probes, edges };
+    bitmap.close();
+    return result;
+  }, png);
+  expect([image.width, image.height]).toEqual([1893, 4096]);
+  expect(image.probes.some(probe => probe.rgba[3] === 0)).toBe(true);
+  expect(image.probes.some(probe => probe.rgba[3] === 255)).toBe(true);
+  expect(image.edges).toHaveLength(16);
+  for (const { x, y, rgba } of [...image.probes, ...image.edges]) {
+    const expected = referencePixel(x, y, image.width, image.height, captured, true, { width: 390, height: 844 });
+    expect(Math.abs(rgba[3] - expected[3]), `alpha at (${x}, ${y})`).toBeLessThanOrEqual(1);
+    // PNG encoding uses an 8-bit premultiplied canvas internally; low-alpha
+    // colors can round by a few levels when converted back to straight alpha.
+    const tolerance = rgba[3] > 0 ? Math.ceil(255 / rgba[3]) + 2 : 0;
+    for (let c = 0; c < 3; c++) expect(Math.abs(rgba[c] - expected[c]), `export (${x}, ${y}) channel ${c}`).toBeLessThanOrEqual(tolerance);
+  }
+  await expect(page.locator('#download')).toBeEnabled();
+  await expect(page.locator('#download-status')).toHaveAttribute('data-error', 'false');
 });

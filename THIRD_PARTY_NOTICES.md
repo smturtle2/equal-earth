@@ -15,7 +15,7 @@ The Shaded Relief and Water raster was resized from 21600 x 10800 to
 8192 x 4096 and encoded as JPEG. No regional content edits were made.
 
 The social preview is the application’s WebGPU-rendered Equal Earth map using
-this raster, centered on the Pacific.
+this raster, shown in the default view on a transparent background.
 
 ## NASA Blue Marble Next Generation
 
