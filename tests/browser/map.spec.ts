@@ -79,9 +79,16 @@ function referenceGlobe(x: number, y: number, width: number, height: number, att
 
 async function installReadback(page: Page) {
   await page.addInitScript(() => {
-    const stats = { submits: 0, contexts: [] as string[], rotation: [] as number[] };
+    const stats = { submits: 0, contexts: [] as string[], rotation: [] as number[], rendered: { texture: '', layer: '' } };
     const submit = GPUQueue.prototype.submit;
-    GPUQueue.prototype.submit = function (...args) { stats.submits++; return submit.apply(this, args); };
+    GPUQueue.prototype.submit = function (...args) {
+      stats.submits++;
+      stats.rendered = {
+        texture: document.getElementById('map')!.dataset.texture!,
+        layer: document.getElementById('globe')!.dataset.layer!,
+      };
+      return submit.apply(this, args);
+    };
     const writeBuffer = GPUQueue.prototype.writeBuffer;
     GPUQueue.prototype.writeBuffer = function (...args) {
       const data = args[2];
@@ -156,6 +163,14 @@ async function waitForPose(page: Page, attitude: Attitude) {
   await expect.poll(() => page.evaluate(() => (window as unknown as {
     mapTestStats: { rotation: number[] }
   }).mapTestStats.rotation)).toEqual(expected);
+}
+
+// Texture loading finishes before requestAnimationFrame submits the new image.
+// Readback must wait for that submission; a fixed delay depends on runner speed.
+async function waitForRender(page: Page, texture: string, layer = 'graticule') {
+  await expect.poll(() => page.evaluate(() => (window as unknown as {
+    mapTestStats: { rendered: { texture: string; layer: string } }
+  }).mapTestStats.rendered)).toEqual({ texture, layer });
 }
 
 test('maps a known raster accurately through rotation, handles input and idles', async ({ page }) => {
@@ -314,13 +329,13 @@ test('loads both real textures, preserves the view, and recovers from failed or 
   const grid = await pixels('globe');
   await choose('blue-marble');
   await expect(canvas).toHaveAttribute('data-texture', 'blue-marble');
-  await page.waitForTimeout(100);
+  await waitForRender(page, 'blue-marble');
   const nasa = await pixels();
   expect(nasa.hash).not.toBe(original.hash);
   expect((await pixels('globe')).hash).toBe(grid.hash);
   await choose('natural-earth');
   await expect(canvas).toHaveAttribute('data-texture', 'natural-earth');
-  await page.waitForTimeout(100);
+  await waitForRender(page, 'natural-earth');
   expect((await pixels()).hash).toBe(original.hash);
 
   await page.route('**/textures/blue-marble.jpg', route => route.fulfill({ status: 503, body: 'Unavailable' }));
@@ -356,19 +371,19 @@ test('loads both real textures, preserves the view, and recovers from failed or 
   await choose('blue-marble');
   await expect(canvas).toHaveAttribute('data-texture', 'blue-marble');
   await expect(page.locator('#texture-status')).toBeEmpty();
-  await page.waitForTimeout(100);
+  await waitForRender(page, 'blue-marble');
   expect((await pixels()).hash).toBe(nasa.hash);
   await page.getByRole('button', { name: '지구본 레이어', exact: true }).click();
-  await page.waitForTimeout(100);
+  await waitForRender(page, 'blue-marble', 'map');
   const nasaGlobe = await pixels('globe');
   expect(nasaGlobe.hash).not.toBe(grid.hash);
   await choose('natural-earth');
   await expect(canvas).toHaveAttribute('data-texture', 'natural-earth');
-  await page.waitForTimeout(100);
+  await waitForRender(page, 'natural-earth', 'map');
   expect((await pixels('globe')).hash).not.toBe(nasaGlobe.hash);
   await choose('blue-marble');
   await expect(canvas).toHaveAttribute('data-texture', 'blue-marble');
-  await page.waitForTimeout(100);
+  await waitForRender(page, 'blue-marble', 'map');
   expect((await pixels('globe')).hash).toBe(nasaGlobe.hash);
   expect(errors).toEqual([]);
 });
