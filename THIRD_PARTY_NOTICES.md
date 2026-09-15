@@ -16,7 +16,7 @@ The Shaded Relief and Water raster was resized from 21600 x 10800 to
 
 ## Natural Earth land outlines
 
-Assets: public/og-image.svg and public/og-image.png
+Asset: public/og-image.png
 The social preview uses Natural Earth 1:110m land polygons, projected with
 Equal Earth and centered on the Pacific. Natural Earth data are public domain.
 Source: https://www.naturalearthdata.com/downloads/110m-physical-vectors/110m-land/
