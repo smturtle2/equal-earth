@@ -279,7 +279,7 @@ test('maps a known raster accurately through rotation, handles input and idles',
   expect(errors).toEqual([]);
 });
 
-test('loads both real textures, preserves the view, and recovers from failed or superseded switches', async ({ page }) => {
+test('loads both real textures, preserves the view, and locks controls during switches', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await installReadback(page);
@@ -288,6 +288,9 @@ test('loads both real textures, preserves the view, and recovers from failed or 
   const selector = page.getByRole('group', { name: '지도 텍스처', exact: true });
   const texture = page.locator('#texture');
   const menu = page.locator('#texture-menu');
+  const options = menu.locator('button[role="menuitemradio"]');
+  const loading = page.locator('#texture-loading');
+  const loadingDots = loading.locator('span');
   const choose = async (id: string) => {
     await texture.click();
     await menu.locator(`button[data-texture="${id}"]`).click();
@@ -314,6 +317,7 @@ test('loads both real textures, preserves the view, and recovers from failed or 
   await expect(canvas).toHaveAttribute('data-state', 'ready');
   await expect(canvas).toHaveAttribute('data-texture', 'natural-earth');
   await expect(selector).toHaveAttribute('aria-busy', 'false');
+  await expect(loading).toBeHidden();
   await expect(texture).toHaveAttribute('aria-label', '지도 텍스처');
   await expect(texture).toHaveAttribute('aria-haspopup', 'menu');
   await expect(texture).toHaveAttribute('aria-expanded', 'false');
@@ -341,6 +345,9 @@ test('loads both real textures, preserves the view, and recovers from failed or 
   await page.route('**/textures/blue-marble.jpg', route => route.fulfill({ status: 503, body: 'Unavailable' }));
   await choose('blue-marble');
   await expect(page.locator('#texture-status')).toContainText('불러오지 못했습니다');
+  await expect(texture).toBeEnabled();
+  await expect.poll(() => options.evaluateAll(buttons => buttons.every(button => !(button as HTMLButtonElement).disabled))).toBe(true);
+  await expect(loading).toBeHidden();
   await expect(menu.locator('[data-texture="natural-earth"]')).toHaveAttribute('aria-checked', 'true');
   await expect(texture).toContainText('Natural Earth II');
   expect((await pixels()).hash).toBe(original.hash);
@@ -353,19 +360,39 @@ test('loads both real textures, preserves the view, and recovers from failed or 
   await page.route('**/textures/blue-marble.jpg', async route => {
     started();
     await held;
-    await route.continue().catch(() => {}); // The superseded request may already be aborted.
+    await route.continue();
   });
   const controlBounds = await selector.boundingBox();
   await choose('blue-marble');
   await requested;
   await expect(selector).toHaveAttribute('aria-busy', 'true');
-  expect(await selector.boundingBox()).toEqual(controlBounds);
-  await choose('natural-earth');
-  await expect(selector).toHaveAttribute('aria-busy', 'false');
+  await expect(texture).toBeDisabled();
+  await expect.poll(() => options.evaluateAll(buttons => buttons.every(button => (button as HTMLButtonElement).disabled))).toBe(true);
+  await expect(menu).toBeHidden();
+  await expect(canvas).toHaveAttribute('data-texture', 'natural-earth');
+  await expect(loading).toBeVisible();
+  await expect(loadingDots).toHaveCount(3);
+  for (let i = 0; i < 3; i++) await expect(loadingDots.nth(i)).toBeVisible();
+  const animationNames = await loadingDots.evaluateAll(spans => spans.map(span => getComputedStyle(span).animationName));
+  expect(animationNames).toHaveLength(3);
+  expect(animationNames.every(name => name !== 'none')).toBe(true);
+  const loadingBounds = await loading.boundingBox();
+  expect(loadingBounds).not.toBeNull();
+  await page.waitForTimeout(100);
+  expect(await loading.boundingBox()).toEqual(loadingBounds);
   expect(await selector.boundingBox()).toEqual(controlBounds);
   release();
-  await page.waitForTimeout(150);
+  await expect(selector).toHaveAttribute('aria-busy', 'false');
+  await expect(texture).toBeEnabled();
+  await expect.poll(() => options.evaluateAll(buttons => buttons.every(button => !(button as HTMLButtonElement).disabled))).toBe(true);
+  await expect(loading).toBeHidden();
+  expect(await selector.boundingBox()).toEqual(controlBounds);
+  await expect(canvas).toHaveAttribute('data-texture', 'blue-marble');
+  await waitForRender(page, 'blue-marble');
+  expect((await pixels()).hash).toBe(nasa.hash);
+  await choose('natural-earth');
   await expect(canvas).toHaveAttribute('data-texture', 'natural-earth');
+  await waitForRender(page, 'natural-earth');
   expect((await pixels()).hash).toBe(original.hash);
   await page.unroute('**/textures/blue-marble.jpg');
   await choose('blue-marble');

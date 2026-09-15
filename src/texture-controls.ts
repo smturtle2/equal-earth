@@ -7,6 +7,8 @@ export function createTextureControls() {
   const menu = document.querySelector<HTMLDivElement>('#texture-menu')!;
   const status = document.querySelector<HTMLSpanElement>('#texture-status')!;
   let selected: TextureId = 'natural-earth';
+  let enabled = false;
+  let busy = true;
   let change: (id: TextureId) => void = () => {};
   const options = Object.entries(textures).map(([id, texture]) => {
     const option = document.createElement('button');
@@ -16,6 +18,7 @@ export function createTextureControls() {
     option.textContent = texture.label;
     option.tabIndex = -1;
     option.addEventListener('click', () => {
+      if (!enabled || busy) return;
       setSelection(id as TextureId);
       menu.hidePopover();
       trigger.focus();
@@ -24,6 +27,12 @@ export function createTextureControls() {
     menu.append(option);
     return option;
   });
+  function updateAvailability() {
+    const disabled = !enabled || busy;
+    trigger.disabled = disabled;
+    for (const option of options) option.disabled = disabled;
+    if (disabled) menu.hidePopover();
+  }
   function setSelection(id: TextureId) {
     selected = id;
     label.textContent = textures[id].label;
@@ -34,6 +43,7 @@ export function createTextureControls() {
   }
   // popovertarget owns click toggling and light-dismiss as one browser action.
   trigger.addEventListener('keydown', event => {
+    if (!enabled || busy) return;
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
     event.preventDefault();
     menu.showPopover();
@@ -64,11 +74,16 @@ export function createTextureControls() {
     options[next].focus();
   });
   setSelection(selected);
+  updateAvailability();
   return {
     setSelection,
     onChange(handler: (id: TextureId) => void) { change = handler; },
-    setEnabled(enabled: boolean) { trigger.disabled = !enabled; if (!enabled) menu.hidePopover(); },
-    setBusy(busy: boolean) { control.setAttribute('aria-busy', String(busy)); },
+    setEnabled(value: boolean) { enabled = value; updateAvailability(); },
+    setBusy(value: boolean) {
+      busy = value;
+      control.setAttribute('aria-busy', String(busy));
+      updateAvailability();
+    },
     setStatus(text: string, error = false) { status.textContent = text; status.dataset.error = String(error); },
   };
 }

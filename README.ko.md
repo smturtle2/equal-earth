@@ -1,4 +1,6 @@
-[![Equal Earth — 중심을 바꿔 보는 세계지도](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+# Equal Earth
+
+[![태평양을 중심으로 렌더링한 Equal Earth 지도](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
 
 <p align="center">
   <a href="https://smturtle2.github.io/equal-earth/"><strong>지도 열기</strong></a> ·

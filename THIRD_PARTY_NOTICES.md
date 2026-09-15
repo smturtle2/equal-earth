@@ -6,7 +6,7 @@ The third-party components below retain their original terms.
 
 ## Natural Earth II
 
-Asset: public/textures/natural-earth.jpg
+Assets: public/textures/natural-earth.jpg, public/og-image.png
 Made with Natural Earth. Natural Earth raster and vector data are public domain.
 Source: https://www.naturalearthdata.com/downloads/10m-raster-data/10m-natural-earth-2/
 Terms: https://www.naturalearthdata.com/about/terms-of-use/
@@ -14,13 +14,8 @@ Terms: https://www.naturalearthdata.com/about/terms-of-use/
 The Shaded Relief and Water raster was resized from 21600 x 10800 to
 8192 x 4096 and encoded as JPEG. No regional content edits were made.
 
-## Natural Earth land outlines
-
-Asset: public/og-image.png
-The social preview uses Natural Earth 1:110m land polygons, projected with
-Equal Earth and centered on the Pacific. Natural Earth data are public domain.
-Source: https://www.naturalearthdata.com/downloads/110m-physical-vectors/110m-land/
-Terms: https://www.naturalearthdata.com/about/terms-of-use/
+The social preview is the application’s WebGPU-rendered Equal Earth map using
+this raster, centered on the Pacific.
 
 ## NASA Blue Marble Next Generation
 

@@ -1,7 +1,9 @@
-[![Equal Earth — A world without a fixed center](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+# Equal Earth
+
+[![Equal Earth map centered on the Pacific](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
 
 <p align="center">
-  <a href="https://smturtle2.github.io/equal-earth/"><strong>Live demo</strong></a> ·
+  <a href="https://smturtle2.github.io/equal-earth/"><strong>Open map</strong></a> ·
   <a href="README.ko.md">한국어</a> ·
   <a href="https://github.com/smturtle2/equal-earth/issues">Report an issue</a>
 </p>
