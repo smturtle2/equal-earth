@@ -1,0 +1,24 @@
+{
+  "name": "equal-earth",
+  "private": true,
+  "version": "0.1.0",
+  "license": "EUPL-1.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.4.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@webgpu/types": "^0.1.72",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
+  }
+}

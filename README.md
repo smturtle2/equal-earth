@@ -1,1 +1,71 @@
-# equal-earth
+# Equal Earth
+
+흰 페이지에 자유롭게 회전할 수 있는 Equal Earth 지도를 표시합니다. 렌더러는 WebGPU만 사용합니다.
+
+화면 아래 선택기로 **Natural Earth II**와 **NASA Blue Marble**을 전환합니다. 기본값은 Natural Earth II입니다. 텍스처를 바꿔도 자세와 확대율을 유지하고, 새 이미지가 준비될 때까지 이전 지도를 표시합니다. 빠르게 선택을 바꾸면 이전 요청을 취소하며, 로딩 실패 시 이전 선택으로 돌아갑니다.
+
+## 로컬 실행
+
+Node.js 22.12 이상 또는 24 이상을 사용합니다.
+
+```sh
+npm ci
+npm run dev
+```
+
+터미널에 표시되는 로컬 주소를 WebGPU 지원 브라우저에서 엽니다. WebGPU 장치를 사용할 수 없는 환경에는 안내만 표시하며, 대체 렌더러는 없습니다.
+
+## 조작
+
+| 입력 | 동작 |
+|---|---|
+| 화면 아래 선택기 | Natural Earth II / NASA Blue Marble 전환 |
+| 드래그 | 자유 회전. 놓으면 남은 목표 차이만 짧게 정착 |
+| Q / E (누르고 있기) | 초당 60° 연속 롤 |
+| Shift + Q / E | 롤 속도 2.5배 |
+| 휠 / 핀치 / +·− | 확대·축소 |
+| 두 손가락 | 이동·비틀기·확대 |
+| 방향키 | 회전 |
+| 0 / Home / 더블 클릭 | 자세·확대 초기화. 텍스처 선택 유지 |
+
+Q/E 롤은 약 100ms의 가속·방향 전환과 약 80ms의 감속을 거칩니다. 드래그는 약 25ms 시간 상수로 목표 자세를 따라가며, 놓은 뒤 남은 차이가 최대 약 75ms 안에 정착합니다. 창이나 캔버스가 포커스를 잃으면 모션과 눌린 키를 정리하고, 입력과 목표 차이가 없는 동안에는 그리기를 계속 예약하지 않습니다.
+
+## 렌더링과 검증
+
+렌더러는 픽셀마다 동일한 4×4 표본을 계산합니다. 각 표본을 Equal Earth 역투영 → 회전 역변환 → 위도·경도로 변환해 원본의 색을 읽습니다. 경도 경계는 반복하고 위도는 이미지 끝에서 멈춥니다. sRGB 원본을 선형 색 공간에서 보간·평균한 후 화면 색으로 변환합니다. 지리적 극 전용 분기나 보정은 없습니다. 고정 표본 방식이므로 모든 해상도에서의 완전한 앨리어싱 제거를 보장하지 않습니다.
+
+```sh
+npm test
+npm run build
+npx playwright install chromium
+npm run test:browser
+```
+
+브라우저 검사는 알려진 위도·경도 색상 래스터의 기본·회전 자세 GPU 출력을 CPU 기준 계산과 대조합니다. 실제 두 JPEG의 로딩·전환, 자세 유지, 실패 복구, 빠른 재선택도 검사합니다. 헤드리스 환경의 화면 합성 제한 때문에 테스트에서 출력 대상을 GPU 텍스처로 바꾸며, 실제 Chrome 화면은 별도로 확인합니다. 마우스·터치·키보드 입력, 초기화, 크기 변경, 유휴 상태의 프레임 제출 중단도 검사합니다.
+
+## 텍스처와 출처
+
+두 자산 모두 공식 21600×10800 원본을 8192×4096 RGB JPEG로 축소했습니다. 확대 생성이나 지역별 내용 수정은 하지 않았습니다.
+
+| 텍스처 | 파일 크기 | 출처 |
+|---|---|---|
+| Natural Earth II with Shaded Relief and Water | 6.83 MB | [Made with Natural Earth — Public domain](https://www.naturalearthdata.com/downloads/10m-raster-data/10m-natural-earth-2/) |
+| Blue Marble Next Generation, July 2004 | 3.93 MB | [NASA Earth Observatory / Reto Stöckli, NASA Goddard Space Flight Center](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/) |
+
+NASA 자산은 2004년 7월 합성 영상이며 현재 관측이나 해빙 분포 지도가 아닙니다. 원본 링크·이용 조건·체크섬은 [sources.json](public/textures/sources.json)에 기록했습니다. 현재 선택된 GPU 텍스처만 유지하며, 전환 준비 중에는 새 자산과 이전 자산이 잠시 함께 존재합니다.
+
+원본에서 다시 생성하려면 다음을 실행합니다. 다운로드 캐시는 기본적으로 시스템 임시 디렉터리에 둡니다.
+
+```sh
+uv run tools/build_textures.py
+```
+
+## 빌드와 범위
+
+`npm run build`는 정적 파일을 `dist/`에 생성합니다. 상대 자산 경로를 사용하므로 GitHub Pages의 저장소 하위 경로에서도 사용할 수 있습니다.
+
+## 라이선스
+
+프로젝트 코드와 문서는 [EUPL-1.2](LICENSE)로 배포합니다. 라이선스 원문은 [유럽연합 공식 배포본](https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12)을 사용합니다.
+
+외부 지구 텍스처와 의존 라이브러리는 각각의 원래 이용 조건을 따릅니다. 자세한 고지는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)와 [텍스처 출처](public/textures/sources.json)에 기록되어 있습니다. 빌드 결과에도 라이선스와 외부 자료 고지가 포함됩니다.

@@ -1,0 +1,31 @@
+{
+  "dimensions": [8192, 4096],
+  "projection": "equirectangular, longitude -180 to 180, latitude 90 to -90",
+  "processing": "RGB, Lanczos downsample from 21600x10800, JPEG quality 92; no regional edits",
+  "textures": [
+    {
+      "file": "natural-earth.jpg",
+      "name": "Natural Earth II with Shaded Relief and Water",
+      "credit": "Made with Natural Earth",
+      "source": "https://www.naturalearthdata.com/downloads/10m-raster-data/10m-natural-earth-2/",
+      "download": "https://naciscdn.org/naturalearth/10m/raster/NE2_HR_LC_SR_W.zip",
+      "terms": "https://www.naturalearthdata.com/about/terms-of-use/",
+      "license": "Public domain",
+      "sourceSha256": "593b2accf1bcdb766d4880ea1dde2cb6d95eb2e9014a35b2b3f12ae2bd461dde",
+      "sha256": "caafd41733b8c71b42741f3bd13f21911cd249be3e4949557afb7aa8d37f0424",
+      "bytes": 6833734
+    },
+    {
+      "file": "blue-marble.jpg",
+      "name": "Blue Marble Next Generation, July 2004 base map",
+      "credit": "NASA Earth Observatory / Reto Stöckli, NASA Goddard Space Flight Center",
+      "source": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/",
+      "download": "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/july/world.200407.3x21600x10800.jpg",
+      "terms": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+      "note": "Historical composite; not current imagery or a sea-ice extent map",
+      "sourceSha256": "dea8b4dc8a4f93f5f8bce0c8c85a508a178e7901e9ed8e6bf86e6ce7ef6d61e2",
+      "sha256": "7a5b124de4d6d163ebd9b2eca268775f701a486bf8d961f0c0c8568aa4e016d9",
+      "bytes": 3931031
+    }
+  ]
+}

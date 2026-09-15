@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Natural Earth II와 NASA Blue Marble로 보는 자유 회전 Equal Earth 지도." />
+    <title>Equal Earth</title>
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <canvas id="map" tabindex="0" role="img" aria-label="Equal Earth 지도. 드래그로 회전, Shift 드래그 또는 Q와 E로 비틀기, 휠로 확대. 방향키로 회전, 0 또는 더블 클릭으로 초기화." aria-busy="true"></canvas>
+    <div id="texture-control">
+      <select id="texture" aria-label="지도 텍스처" disabled></select>
+      <span id="texture-status" role="status"></span>
+    </div>
+    <p id="message" role="status" hidden></p>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

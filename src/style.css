@@ -1,0 +1,13 @@
+:root { color-scheme: light; background: #fff; font-family: system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+#map { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; outline: none; }
+#map:active { cursor: grabbing; }
+#map:focus-visible { outline: 1px solid #a8b8b1; outline-offset: -5px; }
+#message { position: fixed; inset: 0; margin: 0; padding: 32px; place-content: center; text-align: center; color: #60716a; font-size: 14px; line-height: 1.7; }
+#message:not([hidden]) { display: grid; }
+#texture-control { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px; max-width: calc(100% - 24px); }
+#texture { font: inherit; font-size: 14px; color: #333; background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 8px 12px; max-width: 100%; cursor: pointer; }
+#texture:focus-visible { outline: 2px solid #70899f; outline-offset: 3px; }
+#texture-status { font-size: 13px; color: #555; background: #fff; text-align: center; }
+#texture-status:empty { display: none; }
