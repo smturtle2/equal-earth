@@ -2,6 +2,8 @@
 
 흰 페이지에 자유롭게 회전할 수 있는 Equal Earth 지도를 표시합니다. 렌더러는 WebGPU만 사용합니다.
 
+**[지도 열기](https://smturtle2.github.io/equal-earth/)**
+
 화면 아래 드롭다운에서 **Natural Earth II**와 **NASA Blue Marble**을 전환합니다. 기본값은 Natural Earth II입니다. 텍스처를 바꿔도 자세와 확대율을 유지하고, 새 이미지가 준비될 때까지 이전 지도를 표시합니다. 빠르게 선택을 바꾸면 이전 요청을 취소하며, 로딩 실패 시 이전 선택으로 돌아갑니다.
 
 우측 하단 지구본은 지도와 회전·기울기·롤을 공유합니다. 어느 쪽을 드래그해도 두 화면에 함께 반영됩니다. 지구본 우측 상단 레이어 버튼을 한 번 누를 때마다 기본 **위도·경도** 표시와 **지도와 동일** 모드를 전환합니다. 후자는 현재 지도 텍스처를 계속 따라갑니다. 지구본의 표시 크기는 고정이고 확대·축소는 평면 지도에서만 적용됩니다.
@@ -68,6 +70,16 @@ uv run tools/build_textures.py
 ## 빌드와 범위
 
 `npm run build`는 정적 파일을 `dist/`에 생성합니다. 상대 자산 경로를 사용하므로 GitHub Pages의 저장소 하위 경로에서도 사용할 수 있습니다.
+
+### GitHub Pages 배포
+
+[Pages 워크플로](.github/workflows/pages.yml)는 `main`에 push하면 의존성 설치, 단위 테스트, 빌드, Chromium WebGPU 브라우저 검사를 실행한 뒤 성공한 `dist/`를 배포합니다. PR에서는 검사만 실행합니다. Actions의 **Deploy GitHub Pages → Run workflow**에서도 `main`을 수동 배포할 수 있습니다.
+
+저장소 Settings → Pages의 배포 소스는 **GitHub Actions**입니다. 배포 권한은 `deploy` 작업에만 부여하고 `github-pages` 환경을 사용합니다. 공개 주소는 `https://smturtle2.github.io/equal-earth/`이며, 공유 미리보기 메타데이터도 이 주소를 사용합니다.
+
+브라우저 검사는 CI에서 소프트웨어 WebGPU로 실행하며, CI의 느린 렌더링을 고려해 테스트 제한 시간은 120초입니다. 배포 후 실제 브라우저에서 화면 합성과 텍스처 로딩을 확인합니다.
+
+공유 미리보기는 [편집 가능한 SVG](public/og-image.svg)와 1200×630 PNG로 제공됩니다. 육지 윤곽은 Natural Earth의 공개 자료를 사용합니다.
 
 ## 라이선스
 
