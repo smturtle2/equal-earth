@@ -2,6 +2,8 @@ import { expect, it } from 'vitest';
 import { quat, vec3 } from 'gl-matrix';
 import { Attitude } from '../src/attitude';
 import { Motion } from '../src/motion';
+import { viewPresets } from '../src/view-presets';
+import { geographicDirection } from '../src/coordinates';
 
 function expectPose(actual: quat, expected: quat): void {
   const sign = quat.dot(actual, expected) < 0 ? -1 : 1;
@@ -97,6 +99,67 @@ it('composes keyboard roll with drag settling once, without a second smoothing d
 
 const center = (rotation: quat) => vec3.transformQuat(vec3.create(), [0, 0, 1], quat.conjugate(quat.create(), rotation));
 const distance = (a: vec3, b: vec3) => Math.atan2(vec3.length(vec3.cross(vec3.create(), a, b)), vec3.dot(a, b));
+
+it('restores every complete preset while keeping the center on a shortest great circle and retaining zoom', () => {
+  for (const preset of viewPresets) {
+    const destination = geographicDirection(preset);
+    expect(distance(center(preset.rotation), destination)).toBeLessThan(1e-6);
+    if (Math.abs(preset.latitude) < 90) {
+      const pole = vec3.transformQuat(vec3.create(), [0, Math.sign(preset.latitude), 0], preset.rotation);
+      expect(pole[0]).toBeCloseTo(0, 6);
+      expect(pole[1]).toBeGreaterThan(0);
+    } else {
+      for (const longitude of [0, 180]) {
+        const meridian = vec3.transformQuat(vec3.create(),
+          geographicDirection({ latitude: 0, longitude }), preset.rotation);
+        expect(meridian[0]).toBeCloseTo(0, 6);
+        expect(meridian[1]).toBeCloseTo(longitude === 0 ? 1 : -1, 6);
+      }
+    }
+    for (const initial of [new Attitude().rotation, ...viewPresets.map(p => p.rotation)]) {
+      const motion = new Motion(0);
+      quat.copy(motion.attitude.rotation, initial);
+      motion.magnify(2, 0);
+      const start = center(initial);
+      const total = distance(start, destination);
+      motion.orientTo(preset.rotation, 0);
+      let previous = total;
+      for (let now = 50; now <= 1500; now += 50) {
+        motion.advance(now);
+        const current = center(motion.attitude.rotation);
+        const remaining = distance(current, destination);
+        expect(distance(start, current) + remaining).toBeCloseTo(total, 5);
+        expect(remaining).toBeLessThanOrEqual(previous + 1e-6);
+        previous = remaining;
+        expect(motion.attitude.zoom).toBe(2);
+      }
+      expectPose(motion.attitude.rotation, preset.rotation);
+      expect(motion.moving).toBe(false);
+    }
+  }
+});
+
+it('handles preset roll at a fixed center, immediate arrival, supersession and manual interruption', () => {
+  const motion = new Motion(0);
+  const rolled = quat.clone(motion.attitude.rotation);
+  const turn = quat.setAxisAngle(quat.create(), [0, 0, 1], Math.PI);
+  quat.multiply(rolled, turn, rolled);
+  const start = center(rolled);
+  motion.orientTo(rolled, 0);
+  motion.advance(300);
+  expect(distance(start, center(motion.attitude.rotation))).toBeLessThan(1e-6);
+  expect(motion.traveling).toBe(true);
+  motion.orientTo(viewPresets[0].rotation, 300);
+  motion.advance(500);
+  motion.beginDrag(500);
+  expect(motion.traveling).toBe(false);
+  const stopped = quat.clone(motion.attitude.rotation);
+  motion.advance(2000);
+  expectPose(motion.attitude.rotation, stopped);
+  motion.orientTo(viewPresets[7].rotation, 2000, true);
+  expectPose(motion.attitude.rotation, viewPresets[7].rotation);
+  expect(motion.moving).toBe(false);
+});
 
 it('moves the center on the shortest great circle, including poles, the seam and antipodes, without changing zoom', () => {
   for (const [latitude, longitude] of [[37.5665, 126.978], [90, 0], [-90, 0], [0, 179.9999], [0, 180], [0, 0]]) {

@@ -78,30 +78,35 @@ export function bindInteraction(surfaces: Surface[], motion: Motion, invalidate:
     }, { passive: false });
 
     canvas.addEventListener('dblclick', reset);
-    canvas.addEventListener('keydown', (event) => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
-      const angle = event.shiftKey ? 0.15 : 0.06;
-      const now = performance.now();
-      if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'q', 'e', '0', 'home'].includes(event.key.toLowerCase())
-        || (zoom && ['+', '=', '-'].includes(event.key))) onInterrupt(true);
-      switch (event.key.toLowerCase()) {
-        case 'arrowleft': motion.rotate([0, 1, 0], -angle, now); break;
-        case 'arrowright': motion.rotate([0, 1, 0], angle, now); break;
-        case 'arrowup': motion.rotate([1, 0, 0], -angle, now); break;
-        case 'arrowdown': motion.rotate([1, 0, 0], angle, now); break;
-        case 'q': case 'e':
-          if (event.repeat) { event.preventDefault(); return; }
-          motion.setRollKey(event.key.toLowerCase() as 'q' | 'e', true, event.shiftKey, now); break;
-        case 'shift': motion.setFast(true, now); break;
-        case '+': case '=': if (zoom) motion.magnify(1.12); break;
-        case '-': if (zoom) motion.magnify(1 / 1.12); break;
-        case '0': case 'home': reset(); break;
-        default: return;
-      }
-      event.preventDefault();
-      invalidate();
-    });
   }
+  window.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
+    const target = event.target instanceof Element ? event.target : null;
+    // Editing and open menus own their keys. Elsewhere, map shortcuts remain
+    // available even when a control button has keyboard focus.
+    if (target?.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="menu"], [role="listbox"]')) return;
+    const zoom = surfaces.find(surface => surface.canvas === target)?.zoom ?? true;
+    const angle = event.shiftKey ? 0.15 : 0.06;
+    const now = performance.now();
+    if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'q', 'e', '0', 'home'].includes(event.key.toLowerCase())
+      || (zoom && ['+', '=', '-'].includes(event.key))) onInterrupt(true);
+    switch (event.key.toLowerCase()) {
+      case 'arrowleft': motion.rotate([0, 1, 0], -angle, now); break;
+      case 'arrowright': motion.rotate([0, 1, 0], angle, now); break;
+      case 'arrowup': motion.rotate([1, 0, 0], -angle, now); break;
+      case 'arrowdown': motion.rotate([1, 0, 0], angle, now); break;
+      case 'q': case 'e':
+        if (event.repeat) { event.preventDefault(); return; }
+        motion.setRollKey(event.key.toLowerCase() as 'q' | 'e', true, event.shiftKey, now); break;
+      case 'shift': motion.setFast(true, now); break;
+      case '+': case '=': if (zoom) motion.magnify(1.12); break;
+      case '-': if (zoom) motion.magnify(1 / 1.12); break;
+      case '0': case 'home': reset(); break;
+      default: return;
+    }
+    event.preventDefault();
+    invalidate();
+  });
   window.addEventListener('keyup', (event) => {
     const key = event.key.toLowerCase();
     if (key === 'q' || key === 'e') motion.setRollKey(key, false, event.shiftKey, performance.now());

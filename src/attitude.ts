@@ -1,4 +1,5 @@
-import { quat, vec3 } from 'gl-matrix';
+import { glMatrix, quat, vec3 } from 'gl-matrix';
+import { geographicDirection } from './coordinates';
 
 export class Attitude {
   readonly rotation = quat.create();
@@ -21,13 +22,12 @@ export class Attitude {
   }
 
   centerOn(latitude: number, longitude: number): void {
-    const lat = latitude * Math.PI / 180, lon = longitude * Math.PI / 180;
-    const point = vec3.transformQuat(vec3.create(),
-      [Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon)], this.rotation);
+    const point = vec3.transformQuat(vec3.create(), geographicDirection({ latitude, longitude }), this.rotation);
     // The shortest swing to screen-forward transports the view along a great
-    // circle without adding roll. At the exact antipode, choose a stable axis.
+    // circle without adding roll. Without a target orientation, an antipode
+    // uses a stable axis rather than amplifying Float32 roundoff.
     const length = Math.hypot(point[0], point[1]);
-    const axis: [number, number, number] = length > 1e-8
+    const axis: [number, number, number] = length > glMatrix.EPSILON
       ? [point[1] / length, -point[0] / length, 0] : [0, 1, 0];
     this.rotate(axis, Math.atan2(length, point[2]));
   }

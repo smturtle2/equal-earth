@@ -21,6 +21,21 @@ const translations = {
     globeGrid: 'Graticule globe. Rotates with the map. Drag or use arrow keys to rotate; Q and E to roll.',
     globeMap: 'Textured globe. Rotates with the map. Drag or use arrow keys to rotate; Q and E to roll.',
     controls: 'Controls',
+    navigation: 'Map center',
+    presets: 'View presets',
+    presetChoose: 'Choose view',
+    presetNames: { asia: 'Asia', europe: 'Europe', africa: 'Africa', northAmerica: 'N. America', southAmerica: 'S. America', oceania: 'Oceania', northPole: 'North Pole', southPole: 'South Pole' },
+    presetMoving: (name: string) => `Moving to ${name}…`,
+    presetReady: (name: string) => `${name} view.`,
+    coordinates: 'Edit center coordinates',
+    coordinateInput: 'Latitude, longitude',
+    coordinatesInvalid: 'Enter latitude, longitude (e.g. 37.5665, 126.9780).',
+    coordinateGo: 'Go',
+    coordinateCancel: 'Cancel',
+    latitudeInvalid: 'Enter a latitude from −90 to 90.',
+    longitudeInvalid: 'Enter a longitude from −180 to 180.',
+    coordinatesMoving: 'Moving to coordinates…',
+    coordinatesReady: 'Centered on coordinates.',
     locate: 'Center on my location',
     locating: 'Locating…',
     locationMoving: 'Moving to your location…',
@@ -60,6 +75,21 @@ const translations = {
     globeGrid: '위도·경도 지구본. 지도와 함께 회전합니다. 드래그 또는 방향키로 회전, Q와 E로 비틀기.',
     globeMap: '지도 텍스처 지구본. 지도와 함께 회전합니다. 드래그 또는 방향키로 회전, Q와 E로 비틀기.',
     controls: '조작법',
+    navigation: '지도 중심',
+    presets: '시점 프리셋',
+    presetChoose: '시점 선택',
+    presetNames: { asia: '아시아', europe: '유럽', africa: '아프리카', northAmerica: '북아메리카', southAmerica: '남아메리카', oceania: '오세아니아', northPole: '북극', southPole: '남극' },
+    presetMoving: (name: string) => `${name} 시점으로 이동하는 중…`,
+    presetReady: (name: string) => `${name} 시점입니다.`,
+    coordinates: '중심 좌표 편집',
+    coordinateInput: '위도, 경도',
+    coordinatesInvalid: '위도, 경도로 입력해 주세요. 예: 37.5665, 126.9780',
+    coordinateGo: '이동',
+    coordinateCancel: '취소',
+    latitudeInvalid: '위도는 −90~90°로 입력해 주세요.',
+    longitudeInvalid: '경도는 −180~180°로 입력해 주세요.',
+    coordinatesMoving: '입력한 좌표로 이동하는 중…',
+    coordinatesReady: '입력한 좌표로 이동했습니다.',
     locate: '내 위치로 이동',
     locating: '위치를 찾는 중…',
     locationMoving: '내 위치로 이동하는 중…',
@@ -98,7 +128,11 @@ export function localizeDocument() {
     map: text.mapLabel, 'texture-control': text.texture, texture: text.texture,
     'texture-menu': text.textureMenu, 'globe-panel': text.globe,
     'globe-layers-button': text.globeLayers, globe: text.globeGrid,
-    'help-panel': text.controls, download: text.download, locate: text.locate,
+    'help-panel': text.controls, 'navigation-controls': text.navigation,
+    coordinates: text.coordinates, 'coordinate-form': text.coordinates,
+    'coordinate-input': text.coordinateInput,
+    'coordinate-cancel': text.coordinateCancel,
+    download: text.download, locate: text.locate,
   };
   for (const [id, label] of Object.entries(labels)) document.getElementById(id)!.setAttribute('aria-label', label);
   for (const [id, lines] of [['help-mouse', text.helpMouse], ['help-touch', text.helpTouch]] as const) {
@@ -110,7 +144,11 @@ export function localizeDocument() {
     }
   }
   document.getElementById('download')!.setAttribute('title', text.download);
+  document.getElementById('coordinates')!.setAttribute('title', text.coordinates);
+  document.getElementById('coordinate-cancel')!.setAttribute('title', text.coordinateCancel);
   document.getElementById('locate')!.setAttribute('title', text.locate);
+  document.getElementById('coordinate-input')!.setAttribute('placeholder', text.coordinateInput);
+  document.getElementById('coordinate-go')!.textContent = text.coordinateGo;
   const metadata: Record<string, string> = {
     'meta[name="description"]': text.description,
     'meta[property="og:locale"]': locale === 'ko' ? 'ko_KR' : 'en_US',

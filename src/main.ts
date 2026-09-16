@@ -6,7 +6,7 @@ import { createRenderer } from './renderer';
 import type { TextureId } from './textures';
 import { createTextureControls } from './texture-controls';
 import { createDownloadControls } from './download-controls';
-import { createLocationControls } from './location-controls';
+import { createNavigationControls } from './navigation-controls';
 import { bindGlobeControls } from './globe-controls';
 import { GLOBE_RADIUS_RATIO } from './layout';
 
@@ -18,8 +18,9 @@ const globeButton = document.querySelector<HTMLButtonElement>('#globe-layers-but
 const message = document.querySelector<HTMLParagraphElement>('#message')!;
 const textureControls = createTextureControls();
 const downloadControls = createDownloadControls();
-const locationControls = createLocationControls();
+const navigationControls = createNavigationControls();
 const motion = new Motion();
+navigationControls.update(motion.attitude.rotation, false);
 let failed = false;
 
 function showFailure(text: string): void {
@@ -32,7 +33,7 @@ function showFailure(text: string): void {
   globeCanvas.setAttribute('aria-busy', 'false');
   globeButton.disabled = true;
   downloadControls.setEnabled(false);
-  locationControls.setEnabled(false);
+  navigationControls.setEnabled(false);
   textureControls.setEnabled(false);
   textureControls.setBusy(false);
   textureControls.setStatus('');
@@ -69,7 +70,7 @@ try {
       if (failed || document.hidden) return;
       motion.advance(now);
       renderer.draw(motion.attitude);
-      if (!motion.traveling) locationControls.arrive();
+      navigationControls.update(motion.attitude.rotation, motion.traveling);
       canvas.setAttribute('aria-busy', 'false');
       canvas.dataset.state = 'ready';
       globeCanvas.setAttribute('aria-busy', 'false');
@@ -77,11 +78,16 @@ try {
       if (motion.moving) invalidate();
     });
   };
-  locationControls.onLocate((latitude, longitude) => {
+  navigationControls.onMove((latitude, longitude) => {
     motion.centerOn(latitude, longitude, performance.now(), matchMedia('(prefers-reduced-motion: reduce)').matches);
     invalidate();
   });
-  locationControls.setEnabled(true);
+  navigationControls.onEdit(() => { motion.stop(performance.now()); invalidate(); });
+  navigationControls.onOrient((rotation) => {
+    motion.orientTo(rotation, performance.now(), matchMedia('(prefers-reduced-motion: reduce)').matches);
+    invalidate();
+  });
+  navigationControls.setEnabled(true);
   let selectionRequest = 0;
   textureControls.onChange(async (id) => {
     const request = ++selectionRequest;
@@ -112,12 +118,12 @@ try {
     invalidate();
   });
   bindInteraction([{ canvas, zoom: true }, { canvas: globeCanvas, zoom: false, radiusRatio: GLOBE_RADIUS_RATIO }],
-    motion, invalidate, locationControls.cancel);
+    motion, invalidate, navigationControls.cancel);
   const resizeObserver = new ResizeObserver(invalidate);
   resizeObserver.observe(canvas);
   resizeObserver.observe(globeCanvas);
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) locationControls.cancel();
+    if (document.hidden) navigationControls.cancel();
     invalidate();
   });
   window.addEventListener('resize', invalidate);

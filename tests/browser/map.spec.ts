@@ -164,6 +164,20 @@ async function waitForRender(page: Page, texture: string, layer = 'graticule') {
   }).mapTestStats.rendered)).toEqual({ texture, layer });
 }
 
+async function waitForIdle(page: Page) {
+  await page.evaluate(() => new Promise<void>(resolve => {
+    const stats = (window as unknown as { mapTestStats: { submits: number } }).mapTestStats;
+    let last = stats.submits;
+    let steadySince = performance.now();
+    const frame = (now: number) => {
+      if (stats.submits !== last) { last = stats.submits; steadySince = now; }
+      if (now - steadySince >= 100) resolve();
+      else requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }));
+}
+
 test('maps a known raster accurately through rotation, handles input and idles', async ({ page }) => {
   const errors: string[] = [];
   const requests: string[] = [];
@@ -246,7 +260,10 @@ test('maps a known raster accurately through rotation, handles input and idles',
   await canvas.press('0');
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(100);
+  await expect.poll(async () => {
+    const frame = await pixels();
+    return [frame.width, frame.height];
+  }).toEqual([390, 844]);
   const mobile = await pixels();
   expect(mobile.width).toBe(390);
   expect(mobile.height).toBe(844);
@@ -453,7 +470,7 @@ test('synchronizes both projections, keeps globe size fixed, and exposes indepen
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * .7, box.y + box.height * .35, { steps: 8 });
   await page.mouse.up();
-  await page.waitForTimeout(150);
+  await waitForIdle(page);
   const draggedMap = await pixels('map'), draggedGlobe = await pixels('globe');
   expect(draggedMap.hash).not.toBe(beforeDragMap.hash);
   expect(draggedGlobe.hash).not.toBe(beforeDragGlobe.hash);

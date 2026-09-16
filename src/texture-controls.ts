@@ -1,4 +1,5 @@
 import { textures, type TextureId } from './textures';
+import { bindSelectMenu } from './select-menu';
 
 export function createTextureControls() {
   const control = document.querySelector<HTMLDivElement>('#texture-control')!;
@@ -6,7 +7,6 @@ export function createTextureControls() {
   const label = document.querySelector<HTMLSpanElement>('#texture-label')!;
   const menu = document.querySelector<HTMLDivElement>('#texture-menu')!;
   const status = document.querySelector<HTMLSpanElement>('#texture-status')!;
-  let selected: TextureId = 'natural-earth';
   let enabled = false;
   let busy = true;
   let change: (id: TextureId) => void = () => {};
@@ -34,46 +34,11 @@ export function createTextureControls() {
     if (disabled) menu.hidePopover();
   }
   function setSelection(id: TextureId) {
-    selected = id;
     label.textContent = textures[id].label;
     for (const option of options) option.setAttribute('aria-checked', String(option.dataset.texture === id));
   }
-  function focusSelection() {
-    options.find(option => option.dataset.texture === selected)!.focus();
-  }
-  // popovertarget owns click toggling and light-dismiss as one browser action.
-  trigger.addEventListener('keydown', event => {
-    if (!enabled || busy) return;
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-    event.preventDefault();
-    menu.showPopover();
-    focusSelection();
-  });
-  menu.addEventListener('toggle', () => {
-    const open = menu.matches(':popover-open');
-    trigger.setAttribute('aria-expanded', String(open));
-    if (open) focusSelection();
-  });
-  menu.addEventListener('keydown', event => {
-    const index = options.indexOf(document.activeElement as HTMLButtonElement);
-    let next: number;
-    switch (event.key) {
-      case 'ArrowDown': next = (index + 1) % options.length; break;
-      case 'ArrowUp': next = (index - 1 + options.length) % options.length; break;
-      case 'Home': next = 0; break;
-      case 'End': next = options.length - 1; break;
-      case 'Escape':
-        event.preventDefault();
-        menu.hidePopover();
-        trigger.focus();
-        return;
-      case 'Tab': menu.hidePopover(); trigger.focus(); return;
-      default: return;
-    }
-    event.preventDefault();
-    options[next].focus();
-  });
-  setSelection(selected);
+  bindSelectMenu(trigger, menu, options);
+  setSelection('natural-earth');
   updateAvailability();
   return {
     setSelection,

@@ -41,6 +41,12 @@ Quick controls are shown in the lower-left corner, with touch hints on touch dev
 
 The location button requests browser permission only when clicked, then moves the center along the shortest great-circle path while keeping the current zoom. Manual map or globe input cancels a pending move. The app does not save your position.
 
+The live center coordinates appear in the top-right corner, beside the my-location button. Click them to edit one field as `latitude, longitude`, by typing or pasting. Press Enter or Go to move along the same great-circle route while keeping the current zoom; Escape or Cancel discards a draft.
+
+The dropdown below the coordinates contains eight view presets: Asia, Europe, Africa, North America, South America, Oceania, North Pole, and South Pole. Each preset restores both its representative center and predefined orientation while preserving the current zoom. Northern-hemisphere continent presets place the North Pole vertically above the center; southern-hemisphere presets place the South Pole above it. Both pole presets place the 0° meridian at 12 o’clock and the 180° meridian at 6 o’clock. The center animates along the shortest great-circle path; reduced-motion preferences disable the animation, and manual controls interrupt it.
+
+When preset centers are opposite, the target orientation selects a shortest path without unnecessary extra roll. No geographic waypoint or continued spin direction is prescribed. Map keyboard shortcuts remain available after using buttons; coordinate fields and open menus keep their own keyboard behavior.
+
 Choose a texture from the dropdown below the map. Switching textures preserves the view.
 
 Use the download button next to it to save a PNG with a 4,096-pixel long edge. The image keeps the rotation, zoom, texture, and aspect ratio at the moment you click. It includes the large map on a transparent background, with the controls and small globe omitted. Image generation runs in your browser.

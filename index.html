@@ -25,6 +25,34 @@
   <body>
     <canvas id="map" tabindex="0" role="img" aria-label="Equal Earth 지도. 드래그로 회전, Shift 드래그 또는 Q와 E로 비틀기, 휠로 확대. 방향키로 회전, 0 또는 더블 클릭으로 초기화." aria-busy="true"></canvas>
     <span id="location-marker" aria-hidden="true" hidden></span>
+    <div id="navigation-controls" role="group" aria-label="지도 중심">
+      <div id="coordinate-control" data-editing="false">
+        <button id="coordinates" type="button" aria-label="중심 좌표 편집" aria-describedby="coordinate-value" aria-controls="coordinate-form" aria-expanded="false" disabled>
+          <span id="coordinate-value">—</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/></svg>
+        </button>
+        <form id="coordinate-form" aria-label="중심 좌표 편집" novalidate hidden>
+          <input id="coordinate-input" name="coordinates" type="text" inputmode="text" enterkeyhint="go" autocomplete="off" spellcheck="false" aria-label="위도, 경도" placeholder="위도, 경도" aria-describedby="coordinate-error" disabled />
+          <button id="coordinate-go" type="submit" disabled>이동</button>
+          <button id="coordinate-cancel" type="button" aria-label="취소" disabled>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>
+          </button>
+          <span id="coordinate-error" class="coordinate-error" aria-live="polite" hidden></span>
+        </form>
+      </div>
+      <button id="locate" type="button" aria-label="내 위치로 이동" aria-busy="false" disabled>
+        <svg class="location-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
+        <span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+      <div id="view-presets" role="group" aria-label="시점 프리셋">
+        <button id="preset" type="button" aria-label="시점 프리셋" aria-haspopup="menu" aria-controls="preset-menu" aria-expanded="false" popovertarget="preset-menu" disabled>
+          <span id="preset-label"></span>
+          <svg class="select-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+        </button>
+        <div id="preset-menu" role="menu" aria-label="시점 프리셋" popover></div>
+      </div>
+      <span id="location-status" role="status"></span>
+    </div>
     <div id="map-controls">
       <div id="texture-control" role="group" aria-label="지도 텍스처" aria-busy="true">
         <button id="texture" type="button" aria-label="지도 텍스처" aria-haspopup="menu" aria-controls="texture-menu" aria-expanded="false" popovertarget="texture-menu" disabled>
@@ -38,14 +66,9 @@
         <svg class="download-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></svg>
         <span id="download-loading" class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
       </button>
-      <button id="locate" type="button" aria-label="내 위치로 이동" aria-busy="false" disabled>
-        <svg class="location-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
-        <span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
-      </button>
       <div id="control-statuses">
         <span id="texture-status" role="status"></span>
         <span id="download-status" role="status"></span>
-        <span id="location-status" role="status"></span>
       </div>
     </div>
     <aside id="help-panel" role="note" aria-label="조작법">

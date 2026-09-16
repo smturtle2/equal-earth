@@ -1,5 +1,6 @@
 import { quat } from 'gl-matrix';
 import { Attitude } from './attitude';
+import { rotationRoute } from './rotation-route';
 
 type Axis = Readonly<[number, number, number]>;
 const ROLL_SPEED = Math.PI / 3;
@@ -29,7 +30,7 @@ export class Motion {
   private rampDuration = 0;
   private settleStart: quat | undefined;
   private settleElapsed = 0;
-  private journey: { from: quat; elapsed: number; duration: number } | undefined;
+  private journey: { from: quat; swing: quat; roll: number; elapsed: number; duration: number } | undefined;
 
   constructor(now = performance.now()) { this.lastTime = now; }
 
@@ -44,11 +45,24 @@ export class Motion {
     this.advance(now);
     this.stop(now);
     this.target.centerOn(latitude, longitude);
+    this.startJourney(quat.clone(this.target.rotation), 0, reducedMotion);
+  }
+
+  orientTo(rotation: quat, now: number, reducedMotion = false): void {
+    this.advance(now);
+    this.stop(now);
+    const { swing, roll } = rotationRoute(this.attitude.rotation, rotation);
+    quat.copy(this.target.rotation, rotation);
+    this.startJourney(swing, roll, reducedMotion);
+  }
+
+  private startJourney(swing: quat, roll: number, reducedMotion: boolean): void {
     const angle = 2 * Math.acos(Math.min(1, Math.abs(quat.dot(this.attitude.rotation, this.target.rotation))));
     if (reducedMotion || separation(this.attitude.rotation, this.target.rotation) <= ROTATION_EPSILON_SQUARED) {
       quat.copy(this.attitude.rotation, this.target.rotation);
     } else {
-      this.journey = { from: quat.clone(this.attitude.rotation), elapsed: 0, duration: 0.45 + angle / Math.PI * 0.75 };
+      this.journey = { from: quat.clone(this.attitude.rotation), swing, roll, elapsed: 0,
+        duration: 0.45 + angle / Math.PI * 0.75 };
     }
   }
 
@@ -67,7 +81,9 @@ export class Motion {
     if (this.journey) {
       this.journey.elapsed += dt;
       const t = Math.min(1, this.journey.elapsed / this.journey.duration);
-      quat.slerp(this.attitude.rotation, this.journey.from, this.target.rotation, t * t * (3 - 2 * t));
+      const eased = t * t * (3 - 2 * t);
+      quat.slerp(this.attitude.rotation, this.journey.from, this.journey.swing, eased);
+      this.attitude.rotate([0, 0, 1], this.journey.roll * eased);
       quat.normalize(this.attitude.rotation, this.attitude.rotation);
       if (t === 1) {
         quat.copy(this.attitude.rotation, this.target.rotation);

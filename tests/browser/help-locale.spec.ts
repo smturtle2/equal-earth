@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 const labels = {
-  en: { controls: 'Controls', texture: 'Map texture', download: 'Download map as 4K PNG', locate: 'Center on my location', error: 'Open this map in a browser with WebGPU enabled.', mouse: /Drag to rotate/, touch: /Two fingers to zoom & roll/ },
-  ko: { controls: '조작법', texture: '지도 텍스처', download: '지도 4K PNG 다운로드', locate: '내 위치로 이동', error: 'WebGPU를 사용할 수 있는 브라우저에서 열어 주세요.', mouse: /드래그 회전/, touch: /두 손가락으로 확대·비틀기/ },
+  en: { controls: 'Controls', texture: 'Map texture', coordinates: 'Edit center coordinates', download: 'Download map as 4K PNG', locate: 'Center on my location', error: 'Open this map in a browser with WebGPU enabled.', mouse: /Drag to rotate/, touch: /Two fingers to zoom & roll/ },
+  ko: { controls: '조작법', texture: '지도 텍스처', coordinates: '중심 좌표 편집', download: '지도 4K PNG 다운로드', locate: '내 위치로 이동', error: 'WebGPU를 사용할 수 있는 브라우저에서 열어 주세요.', mouse: /드래그 회전/, touch: /두 손가락으로 확대·비틀기/ },
 };
 
 test('localizes concise help and errors, falls back to English, and fits touch layouts', async ({ browser, baseURL }) => {
@@ -23,9 +23,22 @@ test('localizes concise help and errors, falls back to English, and fits touch l
       const download = page.locator('#download');
       await expect(download).toHaveAttribute('aria-label', expected.download);
       await expect(download).toBeDisabled();
+      const coordinates = page.locator('#coordinates');
+      await expect(coordinates).toHaveAttribute('aria-label', expected.coordinates);
+      await expect(coordinates).toBeDisabled();
       const locate = page.locator('#locate');
       await expect(locate).toHaveAttribute('aria-label', expected.locate);
       await expect(locate).toBeDisabled();
+      const presets = page.locator('#preset-menu button');
+      await expect(presets).toHaveCount(8);
+      await expect(page.locator('#preset-menu')).toBeHidden();
+      for (const preset of await presets.all()) {
+        await expect(preset).toBeDisabled();
+      }
+      const preset = page.locator('#preset');
+      await expect(preset).toBeDisabled();
+      await expect(preset).toHaveAttribute('aria-label', language === 'ko' ? '시점 프리셋' : 'View presets');
+      const presetBox = (await preset.boundingBox())!;
       await expect(page.locator('#message')).toHaveText(expected.error);
       const panel = page.getByRole('note', { name: expected.controls, exact: true });
       await expect(panel).toBeVisible();
@@ -34,7 +47,14 @@ test('localizes concise help and errors, falls back to English, and fits touch l
       await expect(hints).toContainText(touch ? expected.touch : expected.mouse);
       await expect(page.locator(touch ? '#help-mouse' : '#help-touch')).toBeHidden();
       const panelBox = (await panel.boundingBox())!;
+      const navigationBox = (await page.locator('#navigation-controls').boundingBox())!;
+      const coordinatesBox = (await coordinates.boundingBox())!;
+      const locateBox = (await locate.boundingBox())!;
       const textureBox = (await page.locator('#texture-control').boundingBox())!;
+      const navigationInset = touch ? 16 : 24;
+      expect(viewport.width - navigationBox.x - navigationBox.width).toBe(navigationInset);
+      expect(navigationBox.y).toBe(navigationInset);
+      expect(locateBox.y).toBe(coordinatesBox.y);
       expect(panelBox.x).toBeGreaterThanOrEqual(0);
       expect(panelBox.y).toBeGreaterThanOrEqual(0);
       expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(viewport.width);
@@ -42,8 +62,7 @@ test('localizes concise help and errors, falls back to English, and fits touch l
       expect(panelBox.x + panelBox.width <= textureBox.x || panelBox.y + panelBox.height <= textureBox.y).toBe(true);
       if (touch) {
         const downloadBox = (await download.boundingBox())!;
-        const locateBox = (await locate.boundingBox())!;
-        const boxes = [locateBox, downloadBox, textureBox];
+        const boxes = [coordinatesBox, locateBox, downloadBox, textureBox, presetBox];
         for (const box of boxes) {
           expect(box.x).toBeGreaterThanOrEqual(0);
           expect(box.y).toBeGreaterThanOrEqual(0);
