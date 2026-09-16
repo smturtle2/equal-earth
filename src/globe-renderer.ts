@@ -2,6 +2,7 @@ import { text } from './i18n';
 import { createViewUniform, type SurfaceStyle } from './view-uniform';
 import type { Attitude } from './attitude';
 import { GLOBE_RADIUS_RATIO } from './layout';
+import { createGlobePoles } from './globe-poles';
 import earth from './earth.wgsl?raw';
 import fullscreen from './fullscreen.wgsl?raw';
 import globe from './globe.wgsl?raw';
@@ -18,6 +19,7 @@ export async function createGlobeRenderer(device: GPUDevice, canvas: HTMLCanvasE
     vertex: { module, entryPoint: 'vertexMain' }, fragment: { module, entryPoint: 'fragmentMain', targets: [{ format }] },
     primitive: { topology: 'triangle-list' } });
   const uniform = createViewUniform(device);
+  const poles = createGlobePoles(canvas);
   let boundTexture: GPUTexture | undefined;
   let boundBorders: GPUTexture | undefined;
   let bindings: GPUBindGroup;
@@ -51,7 +53,8 @@ export async function createGlobeRenderer(device: GPUDevice, canvas: HTMLCanvasE
       pass.setBindGroup(0, bindings);
       pass.draw(3);
       pass.end();
+      poles.draw(attitude.rotation, layer === 'graticule', canvas.clientWidth, canvas.clientHeight);
     },
-    destroy() { uniform.destroy(); context.unconfigure(); },
+    destroy() { poles.destroy(); uniform.destroy(); context.unconfigure(); },
   };
 }

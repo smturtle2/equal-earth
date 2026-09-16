@@ -49,7 +49,14 @@ button { -webkit-tap-highlight-color: transparent; }
   pointer-events: none;
 }
 .globe-heading { display: flex; height: 28px; align-items: center; justify-content: flex-end; }
+.globe-view { position: relative; }
 #globe { width: 100%; height: calc(var(--globe-width) - 70px); pointer-events: auto; }
+.globe-poles { position: absolute; inset: 0; pointer-events: none; user-select: none; }
+.globe-pole {
+  position: absolute; transform: translate(-50%, -50%); color: #344c5c;
+  font-size: 12px; font-weight: 650; line-height: 1;
+  text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 6px #fff;
+}
 #globe-layers-button {
   display: grid; place-items: center; width: 40px; height: 40px; padding: 10px; border: 0; border-radius: 14px;
   color: #6b7e8b; cursor: pointer; pointer-events: auto;

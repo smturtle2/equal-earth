@@ -433,12 +433,38 @@ test('synchronizes both projections, keeps globe size fixed, and exposes indepen
   await page.goto('/');
   const map = page.locator('#map'), globe = page.locator('#globe');
   const layers = page.getByRole('button', { name: '지구본 레이어', exact: true });
+  const northPole = page.locator('.globe-pole[data-pole="north"]');
+  const southPole = page.locator('.globe-pole[data-pole="south"]');
+  const checkPoles = async (attitude: Attitude, visible: 'north' | 'south' | 'none') => {
+    const globeBox = (await globe.boundingBox())!;
+    const rotation = attitude.rotation;
+    const expected = (pole: 'north' | 'south') => {
+      const direction = vec3.transformQuat(vec3.create(), [0, pole === 'north' ? 1 : -1, 0], rotation);
+      return {
+        x: globeBox.x + globeBox.width / 2 + direction[0] * Math.min(globeBox.width, globeBox.height) * .46,
+        y: globeBox.y + globeBox.height / 2 - direction[1] * Math.min(globeBox.width, globeBox.height) * .46,
+      };
+    };
+    for (const [pole, label] of [['north', northPole], ['south', southPole]] as const) {
+      await expect(label).toHaveText(pole === 'north' ? 'N' : 'S');
+      await expect(label).toHaveJSProperty('hidden', visible === 'none' || pole !== visible);
+      await expect(label).toHaveCSS('pointer-events', 'none');
+      if (pole === visible) {
+        const bounds = (await label.boundingBox())!;
+        const target = expected(pole);
+        expect(Math.abs(bounds.x + bounds.width / 2 - target.x)).toBeLessThanOrEqual(1.5);
+        expect(Math.abs(bounds.y + bounds.height / 2 - target.y)).toBeLessThanOrEqual(1.5);
+      }
+    }
+  };
   await expect(globe).toHaveAttribute('data-state', 'ready');
   await expect(globe).toHaveAttribute('data-layer', 'graticule');
   const pixels = (id: string) => page.evaluate(id => (window as unknown as {
     readMap: (id: string) => Promise<{ hash: number; width: number; height: number; probes: { x: number; y: number; rgb: number[] }[] }>
   }).readMap(id), id);
   const initialMap = await pixels('map'), initialGrid = await pixels('globe');
+  const initialAttitude = new Attitude();
+  await checkPoles(initialAttitude, 'north');
   await layers.click();
   await expect(layers).toBeFocused();
   await expect(layers).toHaveAttribute('aria-pressed', 'true');
@@ -446,6 +472,15 @@ test('synchronizes both projections, keeps globe size fixed, and exposes indepen
   await page.waitForTimeout(100);
   expect((await pixels('map')).hash).toBe(initialMap.hash);
   expect((await pixels('globe')).hash).not.toBe(initialGrid.hash);
+  await checkPoles(initialAttitude, 'none');
+
+  await layers.click();
+  await expect(globe).toHaveAttribute('data-layer', 'graticule');
+  await waitForRender(page, 'natural-earth', 'graticule');
+  await checkPoles(initialAttitude, 'north');
+  await layers.click();
+  await expect(globe).toHaveAttribute('data-layer', 'map');
+  await waitForRender(page, 'natural-earth', 'map');
 
   const check = async (attitude: Attitude) => {
     await waitForPose(page, attitude);
@@ -493,6 +528,7 @@ test('synchronizes both projections, keeps globe size fixed, and exposes indepen
   await expect(globe).toHaveAttribute('data-layer', 'graticule');
   await page.waitForTimeout(100);
   expect((await pixels('globe')).hash).toBe(initialGrid.hash);
+  await checkPoles(new Attitude(), 'north');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await layers.click();
@@ -508,6 +544,29 @@ test('synchronizes both projections, keeps globe size fixed, and exposes indepen
     await expect(surface).toHaveCSS('outline-style', 'none');
     await expect(surface).toHaveCSS('box-shadow', 'none');
   }
+  await layers.click();
+  await expect(globe).toHaveAttribute('data-layer', 'graticule');
+  await waitForRender(page, 'natural-earth', 'graticule');
+  await checkPoles(new Attitude(), 'north');
+
+  const polePreset = (latitude: number, roll: number) => {
+    const attitude = new Attitude();
+    quat.identity(attitude.rotation);
+    quat.rotateZ(attitude.rotation, attitude.rotation, roll * Math.PI / 180);
+    quat.rotateX(attitude.rotation, attitude.rotation, latitude * Math.PI / 180);
+    return attitude;
+  };
+  const preset = page.locator('#preset');
+  await preset.click();
+  await page.locator('[data-preset="southPole"]').click();
+  const south = polePreset(-90, 0);
+  await waitForPose(page, south);
+  await checkPoles(south, 'south');
+  await preset.click();
+  await page.locator('[data-preset="northPole"]').click();
+  const north = polePreset(90, 180);
+  await waitForPose(page, north);
+  await checkPoles(north, 'north');
   expect(errors).toEqual([]);
 });
 

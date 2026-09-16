@@ -86,7 +86,9 @@
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
         </button>
       </div>
-      <canvas id="globe" tabindex="0" role="img" aria-label="{{globeGrid}}" aria-busy="true" data-layer="graticule"></canvas>
+      <div class="globe-view">
+        <canvas id="globe" tabindex="0" role="img" aria-label="{{globeGrid}}" aria-busy="true" data-layer="graticule"></canvas>
+      </div>
     </section>
     <p id="message" role="status" hidden></p>
     <script type="module" src="/src/main.ts"></script>
