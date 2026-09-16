@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 """Build deterministic political map assets from Natural Earth 50m vectors.
 
-Usage: uv run scripts/build-political-assets.py
+Usage: uv run tools/build_political_assets.py
 Dependencies are declared in the script so the build is isolated and reproducible.
 """
 # /// script

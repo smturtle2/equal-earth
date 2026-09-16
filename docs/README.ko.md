@@ -1,16 +1,16 @@
 # Equal Earth
 
-[![기본 구도로 렌더링한 Equal Earth 지도](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+[![기본 구도로 렌더링한 Equal Earth 지도](../public/og-image.png)](https://smturtle2.github.io/equal-earth/)
 
 <p align="center">
   <a href="https://smturtle2.github.io/equal-earth/"><strong>지도 열기</strong></a> ·
-  <a href="README.md">English</a> ·
+  <a href="../README.md">English</a> ·
   <a href="https://github.com/smturtle2/equal-earth/issues">문제 제보</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml"><img src="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg" alt="빌드 및 배포 상태"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="라이선스: EUPL-1.2"></a>
+  <a href="../LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="라이선스: EUPL-1.2"></a>
 </p>
 
 원하는 곳을 중심으로 볼 수 있는 인터랙티브 Equal Earth 지도입니다. 대륙의 상대적인 면적을 유지하며 세계를 자유롭게 회전할 수 있습니다.
@@ -56,7 +56,7 @@ WebGPU를 사용할 수 있는 브라우저가 필요합니다.
 
 옆의 다운로드 버튼으로 긴 변이 4,096픽셀인 PNG를 저장합니다. 누른 순간의 회전·확대·텍스처·국경·지명·화면 비율을 유지하며, 투명 배경의 큰 지도만 담고 조작 UI와 작은 지구본은 제외합니다. 이미지는 브라우저에서 생성합니다.
 
-정치지도 자료를 다시 만들려면 `uv run --script scripts/build-political-assets.py`를 실행합니다. 의존성은 격리되며, 원본 주소와 원본·결과물 해시는 [표시 자료 출처](public/layers/sources.json)에 기록합니다.
+정치지도 자료를 다시 만들려면 `uv run --script tools/build_political_assets.py`를 실행합니다. 의존성은 격리되며, 원본 주소와 원본·결과물 해시는 [표시 자료 출처](../public/layers/sources.json)에 기록합니다.
 
 ## 개발
 
@@ -79,7 +79,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-빌드 결과는 `dist/`에 생성됩니다. `main`에 push하면 테스트 통과 후 GitHub Pages에 배포하고, PR에서는 검사만 실행합니다. [배포 워크플로](.github/workflows/pages.yml)를 참고하세요.
+빌드 결과는 `dist/`에 생성됩니다. `main`에 push하면 테스트 통과 후 GitHub Pages에 배포하고, PR에서는 검사만 실행합니다. [배포 워크플로](../.github/workflows/pages.yml)를 참고하세요.
 
 </details>
 
@@ -87,4 +87,4 @@ npm run test:browser
 
 지구 이미지: [Natural Earth](https://www.naturalearthdata.com/), [NASA Blue Marble](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/). Blue Marble은 2004년 7월 합성 영상입니다.
 
-코드와 문서: [EUPL-1.2](LICENSE). 외부 자료에는 각각의 원래 이용 조건이 적용됩니다. [외부 자료 고지](THIRD_PARTY_NOTICES.md)와 [텍스처 출처](public/textures/sources.json)를 참고하세요.
+코드와 문서: [EUPL-1.2](../LICENSE). 외부 자료에는 각각의 원래 이용 조건이 적용됩니다. [외부 자료 고지](THIRD_PARTY_NOTICES.md)와 [텍스처 출처](../public/textures/sources.json)를 참고하세요.

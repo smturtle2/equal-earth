@@ -49,7 +49,7 @@ indefinite, and indeterminant boundaries are dashed using FEATURECLA.
 Country/territory label positions and national capital points carry the source's
 English and Korean names; labels are placed dynamically in the application.
 
-The reproducible generator is scripts/build-political-assets.py. Exact source
+The reproducible generator is tools/build_political_assets.py. Exact source
 archive URLs, versions, SHA-256 hashes, and generated asset hashes are recorded
 in public/layers/sources.json (layers/sources.json in a build).
 

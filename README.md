@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://smturtle2.github.io/equal-earth/"><strong>Open map</strong></a> ·
-  <a href="README.ko.md">한국어</a> ·
+  <a href="docs/README.ko.md">한국어</a> ·
   <a href="https://github.com/smturtle2/equal-earth/issues">Report an issue</a>
 </p>
 
@@ -56,7 +56,7 @@ Political colors, land boundaries, and English/Korean names come from Natural Ea
 
 Use the download button next to it to save a PNG with a 4,096-pixel long edge. The image keeps the rotation, zoom, texture, borders, names, and aspect ratio at the moment you click. It includes the large map on a transparent background, with the controls and small globe omitted. Image generation runs in your browser.
 
-To regenerate the political assets, run `uv run --script scripts/build-political-assets.py`. Dependencies are isolated; source URLs and source/output hashes are recorded in [the layer manifest](public/layers/sources.json).
+To regenerate the political assets, run `uv run --script tools/build_political_assets.py`. Dependencies are isolated; source URLs and source/output hashes are recorded in [the layer manifest](public/layers/sources.json).
 
 ## Development
 
@@ -87,4 +87,4 @@ Build output goes to `dist/`. Pushes to `main` deploy to GitHub Pages after test
 
 Earth imagery: [Natural Earth](https://www.naturalearthdata.com/) and [NASA Blue Marble](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/). Blue Marble uses the July 2004 composite.
 
-Code and documentation: [EUPL-1.2](LICENSE). External assets retain their original terms; see [third-party notices](THIRD_PARTY_NOTICES.md) and [texture sources](public/textures/sources.json).
+Code and documentation: [EUPL-1.2](LICENSE). External assets retain their original terms; see [third-party notices](docs/THIRD_PARTY_NOTICES.md) and [texture sources](public/textures/sources.json).

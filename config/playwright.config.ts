@@ -1,7 +1,9 @@
 import { defineConfig } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
-  testDir: './tests/browser',
+  testDir: '../tests/browser',
+  outputDir: '../node_modules/.cache/playwright',
   workers: 1,
   timeout: process.env.CI ? 120_000 : 60_000,
   forbidOnly: !!process.env.CI,
@@ -12,5 +14,10 @@ export default defineConfig({
     hasTouch: true,
     launchOptions: { args: ['--enable-unsafe-webgpu', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
   },
-  webServer: { command: 'npm run preview -- --port 4173 --strictPort', url: 'http://127.0.0.1:4173', reuseExistingServer: false },
+  webServer: {
+    cwd: fileURLToPath(new URL('..', import.meta.url)),
+    command: 'npm run preview -- --port 4173 --strictPort',
+    url: 'http://127.0.0.1:4173',
+    reuseExistingServer: false,
+  },
 });
