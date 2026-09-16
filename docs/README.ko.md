@@ -4,7 +4,9 @@
 
 [**지도 열기 ↗**](https://smturtle2.github.io/equal-earth/) · [English](../README.md) · [문제 제보](https://github.com/smturtle2/equal-earth/issues)
 
-[빌드 상태](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml) · **WebGPU** · [EUPL-1.2](../LICENSE)
+[![빌드 및 배포 상태](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml)
+![WebGPU](https://img.shields.io/badge/renderer-WebGPU-344c5c)
+[![License: EUPL-1.2](https://img.shields.io/badge/license-EUPL--1.2-344c5c)](../LICENSE)
 
 ![균형 보기의 Equal Earth 지도](../public/og-image.png)
 

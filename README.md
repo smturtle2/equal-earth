@@ -4,7 +4,9 @@
 
 [**Open map ↗**](https://smturtle2.github.io/equal-earth/) · [한국어](docs/README.ko.md) · [Report an issue](https://github.com/smturtle2/equal-earth/issues)
 
-[Build status](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml) · **WebGPU** · [EUPL-1.2](LICENSE)
+[![Build and deployment status](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml)
+![WebGPU](https://img.shields.io/badge/renderer-WebGPU-344c5c)
+[![License: EUPL-1.2](https://img.shields.io/badge/license-EUPL--1.2-344c5c)](LICENSE)
 
 ![Equal Earth map in the Balanced view](public/og-image.png)
 
