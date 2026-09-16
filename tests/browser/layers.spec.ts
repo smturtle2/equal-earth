@@ -37,6 +37,10 @@ test('shares borders across political/satellite/globe views and exports upright 
   await page.locator('#texture').click();
   await page.getByRole('menuitemradio', { name: 'Atlas', exact: true }).click();
   await expect(map).toHaveAttribute('data-texture', 'political');
+  await expect(page.locator('#texture')).toBeEnabled();
+  await expect(map).toHaveAttribute('data-borders', 'false');
+  await expect(map).toHaveAttribute('data-labels', 'false');
+  await page.locator('#map-details').click();
   await expect(map).toHaveAttribute('data-borders', 'true');
   await expect(map).toHaveAttribute('data-labels', 'true');
   const count = () => page.locator('#map-labels').getAttribute('data-count').then(Number);

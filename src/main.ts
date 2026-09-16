@@ -3,7 +3,7 @@ import './style.css';
 import { Motion } from './motion';
 import { bindInteraction } from './interaction';
 import { createRenderer } from './renderer';
-import { textures, type TextureId } from './textures';
+import type { TextureId } from './textures';
 import { createTextureControls } from './texture-controls';
 import { createDownloadControls } from './download-controls';
 import { createNavigationControls } from './navigation-controls';
@@ -109,7 +109,6 @@ try {
       canvas.dataset.texture = id;
       textureControls.setStatus('');
       invalidate();
-      if (textures[id].defaultDetails) await layerControls.enableDefaults();
     } catch (error) {
       if (request !== selectionRequest || failed) return;
       textureControls.setSelection(selected);

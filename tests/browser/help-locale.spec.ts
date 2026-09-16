@@ -27,6 +27,7 @@ test('localizes concise help and errors, falls back to English, and fits touch l
       await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', language === 'ko' ? 'ko_KR' : 'en_US');
       await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', language === 'ko' ? /중심을 바꿔/ : /A world map/);
       await expect(page.locator('#texture')).toHaveAttribute('aria-label', expected.texture);
+      await expect(page.locator('#texture-menu button')).toHaveText(['Natural Earth II', 'NASA Blue Marble', 'Atlas']);
       const download = page.locator('#download');
       await expect(download).toHaveAttribute('aria-label', expected.download);
       await expect(download).toBeDisabled();

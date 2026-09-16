@@ -34,6 +34,7 @@ async function prepare(page: Page, deferred = false) {
 
 test('restores complete presets in both views, keeps zoom and supersedes pending location requests', async ({ page }) => {
   await prepare(page, true);
+  await expect(page.locator('#coordinate-value')).toHaveText('57.0000° N · 15.0000° W');
   const initialScale = await page.evaluate(() => window.locationProbe.map[18]);
   await page.locator('#map').press('+');
   await expect.poll(() => page.evaluate(() => window.locationProbe.map[18])).toBeCloseTo(initialScale * 1.12, 4);

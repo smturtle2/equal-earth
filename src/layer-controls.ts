@@ -5,7 +5,7 @@ export function createLayerControls() {
   const button = document.querySelector<HTMLButtonElement>('#map-details')!;
   const status = document.querySelector<HTMLElement>('#layer-status')!;
   button.title = text.layers;
-  let active = false, enabled = false, busy = false, customized = false;
+  let active = false, enabled = false, busy = false;
   let change: (value: MapLayers) => Promise<void> = async () => {};
   function update() {
     button.disabled = !enabled || busy;
@@ -21,11 +21,10 @@ export function createLayerControls() {
     catch { status.textContent = text.layersFailed; status.dataset.error = 'true'; }
     finally { busy = false; update(); }
   }
-  button.addEventListener('click', () => { customized = true; void apply(!active); });
+  button.addEventListener('click', () => { void apply(!active); });
   update();
   return {
     onChange(handler: typeof change) { change = handler; },
     setEnabled(value: boolean) { enabled = value; update(); },
-    async enableDefaults() { if (!customized) await apply(true); },
   };
 }

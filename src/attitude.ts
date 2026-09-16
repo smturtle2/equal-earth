@@ -12,6 +12,7 @@ export class Attitude {
     quat.set(this.rotation,
       0.4176124632358551, -0.19188641011714935,
       -0.5339241623878479, 0.7097213864326477);
+    this.centerOn(57, -15);
     this.zoom = 1;
   }
 
