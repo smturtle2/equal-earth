@@ -1,9 +1,4 @@
-struct GlobeView {
-  inverseRotation: mat4x4<f32>,
-  viewport: vec4<f32>,
-  details: vec4<f32>,
-}
-@group(0) @binding(0) var<uniform> globe: GlobeView;
+@group(0) @binding(0) var<uniform> globe: View;
 
 fn graticule(world: vec3<f32>, radius: f32, depth: f32) -> vec3<f32> {
   let latitude = asin(clamp(world.y, -1.0, 1.0));

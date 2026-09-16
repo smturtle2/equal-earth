@@ -8,7 +8,7 @@ export type MapLabel = {
   id: string; kind: 'country' | 'capital'; longitude: number; latitude: number;
   name_en: string; name_ko?: string; rank: number;
 };
-export type PlacedLabel = { id: string; name: string; x: number; y: number; width: number; size: number; capital: boolean };
+type PlacedLabel = { id: string; name: string; x: number; y: number; width: number; size: number; capital: boolean };
 
 // Layout is in CSS pixels, including for export: increasing output resolution
 // keeps the same labels and spacing instead of revealing extra names.

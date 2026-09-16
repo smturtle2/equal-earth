@@ -1,4 +1,5 @@
-import { mat4, quat } from 'gl-matrix';
+import type { quat } from 'gl-matrix';
+import { createViewUniform, type SurfaceStyle } from './view-uniform';
 import { createRows } from './projection';
 import { mapLayout } from './layout';
 import shader from './map.wgsl?raw';
@@ -27,10 +28,7 @@ export function createMapPipeline(device: GPUDevice) {
 
 // Each target owns its buffers so an export cannot resize or overwrite the live view.
 export function createMapFrame(device: GPUDevice, pipeline: GPUComputePipeline, sampler: GPUSampler, background: 'white' | 'transparent' = 'white') {
-  const uniform = device.createBuffer({ size: 96, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const values = new Float32Array(24);
-  const inverse = quat.create();
-  const matrix = mat4.create();
+  const uniform = createViewUniform(device);
   let rows: GPUBuffer | undefined;
   let frame: GPUTexture | undefined;
   let bindings: GPUBindGroup;
@@ -40,7 +38,7 @@ export function createMapFrame(device: GPUDevice, pipeline: GPUComputePipeline, 
 
   return {
     encode(commands: GPUCommandEncoder, texture: GPUTexture, borders: GPUTexture, layout: FrameLayout,
-      rotation: quat, details: readonly [boolean, boolean]): GPUTexture {
+      rotation: quat, style: SurfaceStyle): GPUTexture {
       const { width, height, x, y, scale } = layout;
       const shape = `${width}:${height}:${scale}:${y}`;
       if (shape !== lastShape || texture !== lastTexture || borders !== lastBorders) {
@@ -55,7 +53,7 @@ export function createMapFrame(device: GPUDevice, pipeline: GPUComputePipeline, 
             usage: GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC });
         }
         bindings = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [
-          { binding: 0, resource: { buffer: uniform } },
+          { binding: 0, resource: { buffer: uniform.buffer } },
           { binding: 1, resource: { buffer: rows } },
           { binding: 2, resource: frame.createView() },
           { binding: 3, resource: texture.createView() },
@@ -67,12 +65,7 @@ export function createMapFrame(device: GPUDevice, pipeline: GPUComputePipeline, 
         lastTexture = texture;
         lastBorders = borders;
       }
-      quat.conjugate(inverse, rotation);
-      mat4.fromQuat(matrix, inverse);
-      values.set(matrix);
-      values.set([x, y, scale, background === 'transparent' ? 1 : 0], 16);
-      values.set([Number(details[0]), Number(details[1]), 0, 0], 20);
-      device.queue.writeBuffer(uniform, 0, values);
+      uniform.write(rotation, [x, y, scale, background === 'transparent' ? 1 : 0], style);
       const pass = commands.beginComputePass();
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bindings);

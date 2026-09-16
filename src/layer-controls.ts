@@ -1,5 +1,5 @@
 import { text } from './i18n';
-import type { MapLayers } from './map-layers';
+import type { MapLayers } from './earth-assets';
 
 export function createLayerControls() {
   const button = document.querySelector<HTMLButtonElement>('#map-details')!;
@@ -26,6 +26,6 @@ export function createLayerControls() {
   return {
     onChange(handler: typeof change) { change = handler; },
     setEnabled(value: boolean) { enabled = value; update(); },
-    async usePoliticalDefaults() { if (!customized) await apply(true); },
+    async enableDefaults() { if (!customized) await apply(true); },
   };
 }

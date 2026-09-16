@@ -1,4 +1,5 @@
 import type { quat } from 'gl-matrix';
+import type { SurfaceStyle } from './view-uniform';
 import { createMapFrame, type FrameLayout } from './map-frame';
 import { text, locale } from './i18n';
 import { drawLabels, type MapLabel } from './map-labels';
@@ -7,7 +8,7 @@ export const EXPORT_LONG_EDGE = 4096;
 
 export async function exportMapPNG(device: GPUDevice, pipeline: GPUComputePipeline, sampler: GPUSampler,
   texture: GPUTexture, borders: GPUTexture, layout: FrameLayout, rotation: quat,
-  details: readonly [boolean, boolean], labels: MapLabel[], ratio: number): Promise<Blob> {
+  style: SurfaceStyle, labels: MapLabel[], ratio: number): Promise<Blob> {
   const { width, height } = layout;
   const rowBytes = Math.ceil(width * 4 / 256) * 256;
   if (Math.max(width, height) > device.limits.maxTextureDimension2D || rowBytes * height > device.limits.maxBufferSize) {
@@ -23,7 +24,7 @@ export async function exportMapPNG(device: GPUDevice, pipeline: GPUComputePipeli
   let memory: Promise<GPUError | null> | undefined;
   try {
     const commands = device.createCommandEncoder({ label: 'export map PNG' });
-    const frame = target.encode(commands, texture, borders, layout, rotation, details);
+    const frame = target.encode(commands, texture, borders, layout, rotation, style);
     readback = device.createBuffer({ label: 'map export readback', size: rowBytes * height,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
     commands.copyTextureToBuffer({ texture: frame }, { buffer: readback, bytesPerRow: rowBytes }, [width, height]);

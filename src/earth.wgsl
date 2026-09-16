@@ -1,3 +1,12 @@
+// Shared uniform layout for the map, globe, and PNG export.
+struct View {
+  inverseRotation: mat4x4<f32>,
+  // Center, scale, and a mode flag interpreted by each projection.
+  viewport: vec4<f32>,
+  // Border visibility and dark ink, followed by two reserved values.
+  details: vec4<f32>,
+}
+
 @group(0) @binding(3) var earth: texture_2d<f32>;
 @group(0) @binding(4) var earthSampler: sampler;
 @group(0) @binding(5) var borders: texture_2d<f32>;

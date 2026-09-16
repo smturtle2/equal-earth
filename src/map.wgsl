@@ -1,10 +1,3 @@
-struct View {
-  inverseRotation: mat4x4<f32>,
-  // Center, scale, and whether the output background is transparent.
-  viewport: vec4<f32>,
-  details: vec4<f32>,
-}
-
 @group(0) @binding(0) var<uniform> view: View;
 @group(0) @binding(1) var<storage, read> rows: array<vec4<f32>>;
 @group(0) @binding(2) var frame: texture_storage_2d<rgba8unorm, write>;
