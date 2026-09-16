@@ -9,16 +9,19 @@ import { createDownloadControls } from './download-controls';
 import { createNavigationControls } from './navigation-controls';
 import { bindGlobeControls } from './globe-controls';
 import { GLOBE_RADIUS_RATIO } from './layout';
+import { createLayerControls } from './layer-controls';
 
 localizeDocument();
 
 const canvas = document.querySelector<HTMLCanvasElement>('#map')!;
 const globeCanvas = document.querySelector<HTMLCanvasElement>('#globe')!;
+const labelCanvas = document.querySelector<HTMLCanvasElement>('#map-labels')!;
 const globeButton = document.querySelector<HTMLButtonElement>('#globe-layers-button')!;
 const message = document.querySelector<HTMLParagraphElement>('#message')!;
 const textureControls = createTextureControls();
 const downloadControls = createDownloadControls();
 const navigationControls = createNavigationControls();
+const layerControls = createLayerControls();
 const motion = new Motion();
 navigationControls.update(motion.attitude.rotation, false);
 let failed = false;
@@ -34,13 +37,14 @@ function showFailure(text: string): void {
   globeButton.disabled = true;
   downloadControls.setEnabled(false);
   navigationControls.setEnabled(false);
+  layerControls.setEnabled(false);
   textureControls.setEnabled(false);
   textureControls.setBusy(false);
   textureControls.setStatus('');
 }
 
 try {
-  const renderer = await createRenderer(canvas, globeCanvas, showFailure);
+  const renderer = await createRenderer(canvas, globeCanvas, labelCanvas, showFailure);
   let selected: TextureId = 'natural-earth';
   textureControls.setStatus(text.loading);
   try {
@@ -88,6 +92,11 @@ try {
     invalidate();
   });
   navigationControls.setEnabled(true);
+  layerControls.onChange(async layers => {
+    await renderer.setLayers(layers);
+    invalidate();
+  });
+  layerControls.setEnabled(true);
   let selectionRequest = 0;
   textureControls.onChange(async (id) => {
     const request = ++selectionRequest;
@@ -100,6 +109,7 @@ try {
       canvas.dataset.texture = id;
       textureControls.setStatus('');
       invalidate();
+      if (id === 'political') await layerControls.usePoliticalDefaults();
     } catch (error) {
       if (request !== selectionRequest || failed) return;
       textureControls.setSelection(selected);

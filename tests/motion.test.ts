@@ -104,7 +104,9 @@ it('restores every complete preset while keeping the center on a shortest great 
   for (const preset of viewPresets) {
     const destination = geographicDirection(preset);
     expect(distance(center(preset.rotation), destination)).toBeLessThan(1e-6);
-    if (Math.abs(preset.latitude) < 90) {
+    if (preset.id === 'default') {
+      expectPose(preset.rotation, new Attitude().rotation);
+    } else if (Math.abs(preset.latitude) < 90) {
       const pole = vec3.transformQuat(vec3.create(), [0, Math.sign(preset.latitude), 0], preset.rotation);
       expect(pole[0]).toBeCloseTo(0, 6);
       expect(pole[1]).toBeGreaterThan(0);

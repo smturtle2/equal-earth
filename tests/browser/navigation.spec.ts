@@ -22,7 +22,7 @@ async function prepare(page: Page, deferred = false) {
     const write = GPUQueue.prototype.writeBuffer;
     GPUQueue.prototype.writeBuffer = function (...args) {
       const data = args[2];
-      if (data instanceof Float32Array && data.length === 20) {
+      if (data instanceof Float32Array && data.length === 24) {
         probe[data[16] === document.querySelector('canvas')!.width / 2 ? 'map' : 'globe'] = Array.from(data);
       }
       return write.apply(this, args);
@@ -87,11 +87,11 @@ test('keeps shortcuts after button use, reserves editing and menu keys, and fits
   const menu = page.locator('#preset-menu');
   await trigger.click();
   await expect(menu).toBeVisible();
-  await expect(page.locator('[data-preset="asia"]')).toBeFocused();
+  await expect(page.locator('[data-preset="default"]')).toBeFocused();
   await page.keyboard.press('ArrowDown');
-  await expect(page.locator('[data-preset="europe"]')).toBeFocused();
-  await page.keyboard.press('Home');
   await expect(page.locator('[data-preset="asia"]')).toBeFocused();
+  await page.keyboard.press('Home');
+  await expect(page.locator('[data-preset="default"]')).toBeFocused();
   await page.keyboard.press('q');
   await page.keyboard.press('ArrowLeft');
   expect(await rotation()).toEqual(initial);

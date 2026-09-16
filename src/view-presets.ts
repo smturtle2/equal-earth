@@ -1,4 +1,6 @@
 import { quat } from 'gl-matrix';
+import { Attitude } from './attitude';
+import { centerCoordinates } from './coordinates';
 
 // Representative centers, with each continent's hemisphere pole vertically up.
 // At either pole, the 0° meridian points up and the 180° meridian points down.
@@ -13,7 +15,7 @@ const compositions = [
   ['southPole', -90, 0, 0],
 ] as const;
 
-export const viewPresets = compositions.map(([id, latitude, longitude, roll]) => {
+const regionalPresets = compositions.map(([id, latitude, longitude, roll]) => {
   const radians = Math.PI / 180;
   const rotation = quat.create();
   quat.rotateZ(rotation, rotation, roll * radians);
@@ -21,5 +23,12 @@ export const viewPresets = compositions.map(([id, latitude, longitude, roll]) =>
   quat.rotateY(rotation, rotation, -longitude * radians);
   return { id, latitude, longitude, roll, rotation };
 });
+
+// Use the same orientation as startup and reset, including its original roll.
+const defaultRotation = new Attitude().rotation;
+export const viewPresets = [
+  { id: 'default' as const, ...centerCoordinates(defaultRotation), rotation: defaultRotation },
+  ...regionalPresets,
+];
 
 export type ViewPreset = typeof viewPresets[number];

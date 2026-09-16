@@ -32,6 +32,27 @@ relicensed as project-authored EUPL material. No NASA endorsement is implied.
 Exact source URLs, processing information and SHA-256 hashes for both textures
 are recorded in public/textures/sources.json (textures/sources.json in a build).
 
+## Natural Earth political map, boundaries, and labels
+
+Assets: public/textures/political.png, public/layers/borders.png,
+public/layers/labels.json
+
+Made with Natural Earth. Public domain vector data, 1:50m, version 5.1.2.
+Source: https://www.naturalearthdata.com/downloads/50m-cultural-vectors/
+Terms: https://www.naturalearthdata.com/about/terms-of-use/
+Boundary policy: https://www.naturalearthdata.com/about/disputed-boundaries-policy/
+
+Country polygons and land boundary lines were rasterized to 8192 x 4096
+equirectangular PNGs. The palette uses Natural Earth's MAPCOLOR9 categories.
+The source's default de facto boundaries are retained. Disputed, line-of-control,
+indefinite, and indeterminant boundaries are dashed using FEATURECLA.
+Country/territory label positions and national capital points carry the source's
+English and Korean names; labels are placed dynamically in the application.
+
+The reproducible generator is scripts/build-political-assets.py. Exact source
+archive URLs, versions, SHA-256 hashes, and generated asset hashes are recorded
+in public/layers/sources.json (layers/sources.json in a build).
+
 ## gl-matrix 3.4.4 — MIT
 
 https://github.com/toji/gl-matrix

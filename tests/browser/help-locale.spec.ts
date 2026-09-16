@@ -30,15 +30,18 @@ test('localizes concise help and errors, falls back to English, and fits touch l
       await expect(locate).toHaveAttribute('aria-label', expected.locate);
       await expect(locate).toBeDisabled();
       const presets = page.locator('#preset-menu button');
-      await expect(presets).toHaveCount(8);
+      await expect(presets).toHaveCount(9);
       await expect(page.locator('#preset-menu')).toBeHidden();
       for (const preset of await presets.all()) {
         await expect(preset).toBeDisabled();
       }
       const preset = page.locator('#preset');
       await expect(preset).toBeDisabled();
-      await expect(preset).toHaveAttribute('aria-label', language === 'ko' ? '시점 프리셋' : 'View presets');
+      await expect(preset).toHaveAttribute('aria-label', language === 'ko' ? '프리셋' : 'Presets');
       const presetBox = (await preset.boundingBox())!;
+      const details = page.locator('#map-details');
+      await expect(details).toHaveAttribute('aria-label', language === 'ko' ? '국경·지명 표시' : 'Show borders and names');
+      await expect(details).toBeDisabled();
       await expect(page.locator('#message')).toHaveText(expected.error);
       const panel = page.getByRole('note', { name: expected.controls, exact: true });
       await expect(panel).toBeVisible();
@@ -62,7 +65,8 @@ test('localizes concise help and errors, falls back to English, and fits touch l
       expect(panelBox.x + panelBox.width <= textureBox.x || panelBox.y + panelBox.height <= textureBox.y).toBe(true);
       if (touch) {
         const downloadBox = (await download.boundingBox())!;
-        const boxes = [coordinatesBox, locateBox, downloadBox, textureBox, presetBox];
+        const boxes = [coordinatesBox, locateBox, downloadBox, textureBox, presetBox,
+          (await details.boundingBox())!];
         for (const box of boxes) {
           expect(box.x).toBeGreaterThanOrEqual(0);
           expect(box.y).toBeGreaterThanOrEqual(0);

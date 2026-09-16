@@ -1,11 +1,13 @@
 import type { quat } from 'gl-matrix';
 import { createMapFrame, type FrameLayout } from './map-frame';
-import { text } from './i18n';
+import { text, locale } from './i18n';
+import { drawLabels, type MapLabel } from './map-labels';
 
 export const EXPORT_LONG_EDGE = 4096;
 
 export async function exportMapPNG(device: GPUDevice, pipeline: GPUComputePipeline, sampler: GPUSampler,
-  texture: GPUTexture, layout: FrameLayout, rotation: quat): Promise<Blob> {
+  texture: GPUTexture, borders: GPUTexture, layout: FrameLayout, rotation: quat,
+  details: readonly [boolean, boolean], labels: MapLabel[], ratio: number): Promise<Blob> {
   const { width, height } = layout;
   const rowBytes = Math.ceil(width * 4 / 256) * 256;
   if (Math.max(width, height) > device.limits.maxTextureDimension2D || rowBytes * height > device.limits.maxBufferSize) {
@@ -21,7 +23,7 @@ export async function exportMapPNG(device: GPUDevice, pipeline: GPUComputePipeli
   let memory: Promise<GPUError | null> | undefined;
   try {
     const commands = device.createCommandEncoder({ label: 'export map PNG' });
-    const frame = target.encode(commands, texture, layout, rotation);
+    const frame = target.encode(commands, texture, borders, layout, rotation, details);
     readback = device.createBuffer({ label: 'map export readback', size: rowBytes * height,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
     commands.copyTextureToBuffer({ texture: frame }, { buffer: readback, bytesPerRow: rowBytes }, [width, height]);
@@ -46,6 +48,9 @@ export async function exportMapPNG(device: GPUDevice, pipeline: GPUComputePipeli
     const context = canvas.getContext('2d');
     if (!context) throw new Error(text.exportFailed);
     context.putImageData(new ImageData(pixels!, width, height), 0, 0);
+    if (labels.length) drawLabels(context, labels, rotation, {
+      width: width / ratio, height: height / ratio, x: layout.x / ratio, y: layout.y / ratio, scale: layout.scale / ratio,
+    }, locale, ratio);
     return await canvas.convertToBlob({ type: 'image/png' });
   } finally {
     canvas.width = canvas.height = 1;

@@ -11,12 +11,13 @@
 html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 #map, #globe { display: block; touch-action: none; cursor: grab; outline: none; }
 #map { width: 100%; height: 100%; }
+#map-labels { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #map:active, #globe:active { cursor: grabbing; }
 #map:focus, #globe:focus { outline: none; }
 button { -webkit-tap-highlight-color: transparent; }
 #message { position: fixed; inset: 0; margin: 0; padding: 32px; place-content: center; text-align: center; color: #60716a; font-size: 14px; line-height: 1.7; }
 #message:not([hidden]) { display: grid; }
-#texture-control, #globe-layers-button, #download, #locate, #coordinate-control {
+#texture-control, #globe-layers-button, #download, #map-details, #locate, #coordinate-control {
   background: var(--control-surface);
   box-shadow: var(--control-shadow);
 }
@@ -26,11 +27,12 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 #texture-control { position: relative; border-radius: 16px; }
 #texture {
-  display: flex; align-items: center; justify-content: space-between; gap: 20px; width: min(220px, calc(100vw - 88px)); height: 44px; padding: 0 16px; border: 0; border-radius: 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: min(220px, calc(100vw - 144px)); height: 44px; padding: 0 16px; border: 0; border-radius: 16px;
   font: inherit; font-size: 14px; font-weight: 500; letter-spacing: -.2px;
   color: #24333e; background: transparent; cursor: pointer;
 }
 #texture:hover, #texture[aria-expanded=true] { background: var(--control-hover); }
+#texture-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #texture:disabled, #globe-layers-button:disabled, #download:disabled, #locate:disabled, #coordinate-control button:disabled { cursor: default; opacity: .5; }
 .select-chevron { flex: none; fill: none; stroke: #6b7e8b; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .loading-dots { display: none; flex: none; width: 16px; height: 16px; align-items: center; justify-content: space-between; }
@@ -69,7 +71,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 
 #texture-menu, #preset-menu {
-  position: fixed; inset: auto auto max(76px, calc(env(safe-area-inset-bottom) + 52px)) max(138px, calc(50% - 28px));
+  position: fixed; inset: auto auto max(76px, calc(env(safe-area-inset-bottom) + 52px)) max(138px, calc(50% - 56px));
   transform: translateX(-50%); width: 244px; max-height: min(360px, 60vh); margin: 0; padding: 6px;
   overflow-y: auto; border: 1px solid #e9edf0; border-radius: 18px; background: #fff;
   box-shadow: 0 12px 36px #23323e12, 0 2px 6px #23323e06;
@@ -98,8 +100,12 @@ button { -webkit-tap-highlight-color: transparent; }
   #help-panel { left: max(16px, env(safe-area-inset-left)); bottom: max(86px, calc(env(safe-area-inset-bottom) + 70px)); max-width: calc(100vw - 204px); }
 }
 
-#download, #locate { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 16px; color: #6b7e8b; cursor: pointer; }
-#download:hover, #locate:hover { background: var(--control-hover); }
+#download, #locate, #map-details { display: grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 16px; color: #6b7e8b; cursor: pointer; }
+#download:hover, #locate:hover, #map-details:hover { background: var(--control-hover); }
+#map-details svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
+#map-details[aria-pressed=true] { color: #243b49; background: #edf3f6; box-shadow: var(--control-shadow), inset 0 0 0 1px #d8e3e9; }
+#map-details:focus-visible { outline: 2px solid #92a9b9; outline-offset: 3px; }
+#map-details:disabled { opacity: .5; cursor: default; }
 .download-icon, .location-icon { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 #download[aria-busy=true] .download-icon, #locate[aria-busy=true] .location-icon { display: none; }
 #download[aria-busy=true] .loading-dots, #locate[aria-busy=true] .loading-dots { display: flex; }

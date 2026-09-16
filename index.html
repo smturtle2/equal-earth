@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="중심을 바꿔 보는 세계지도. Equal Earth 지도와 지구본을 자유롭게 회전하고 Natural Earth II와 NASA Blue Marble을 비교하세요." />
+    <meta name="description" content="중심을 바꿔 보는 세계지도. Equal Earth 지도와 지구본을 자유롭게 회전하고, 위성·정치지도를 비교하며 국경과 지명을 살펴보세요." />
     <link rel="canonical" href="https://smturtle2.github.io/equal-earth/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ko_KR" />
@@ -14,7 +14,7 @@
     <meta property="og:image" content="https://smturtle2.github.io/equal-earth/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="기본 시점의 Equal Earth 세계지도" />
+    <meta property="og:image:alt" content="기본 방향의 Equal Earth 세계지도" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Equal Earth — 중심을 바꿔 보는 세계지도" />
     <meta name="twitter:description" content="지도와 지구본을 자유롭게 회전하며 원하는 중심에서 세계를 보세요." />
@@ -24,6 +24,7 @@
   </head>
   <body>
     <canvas id="map" tabindex="0" role="img" aria-label="Equal Earth 지도. 드래그로 회전, Shift 드래그 또는 Q와 E로 비틀기, 휠로 확대. 방향키로 회전, 0 또는 더블 클릭으로 초기화." aria-busy="true"></canvas>
+    <canvas id="map-labels" aria-hidden="true"></canvas>
     <span id="location-marker" aria-hidden="true" hidden></span>
     <div id="navigation-controls" role="group" aria-label="지도 중심">
       <div id="coordinate-control" data-editing="false">
@@ -44,12 +45,12 @@
         <svg class="location-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
         <span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
       </button>
-      <div id="view-presets" role="group" aria-label="시점 프리셋">
-        <button id="preset" type="button" aria-label="시점 프리셋" aria-haspopup="menu" aria-controls="preset-menu" aria-expanded="false" popovertarget="preset-menu" disabled>
+      <div id="view-presets" role="group" aria-label="프리셋">
+        <button id="preset" type="button" aria-label="프리셋" aria-haspopup="menu" aria-controls="preset-menu" aria-expanded="false" popovertarget="preset-menu" disabled>
           <span id="preset-label"></span>
           <svg class="select-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
         </button>
-        <div id="preset-menu" role="menu" aria-label="시점 프리셋" popover></div>
+        <div id="preset-menu" role="menu" aria-label="프리셋" popover></div>
       </div>
       <span id="location-status" role="status"></span>
     </div>
@@ -62,6 +63,9 @@
         </button>
         <div id="texture-menu" role="menu" aria-label="지도 텍스처 목록" popover></div>
       </div>
+      <button id="map-details" type="button" aria-label="국경·지명 표시" aria-pressed="false" aria-busy="false" disabled>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>
+      </button>
       <button id="download" type="button" aria-label="지도 4K PNG 다운로드" aria-busy="false" disabled>
         <svg class="download-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v4h14v-4"/></svg>
         <span id="download-loading" class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -69,6 +73,7 @@
       <div id="control-statuses">
         <span id="texture-status" role="status"></span>
         <span id="download-status" role="status"></span>
+        <span id="layer-status" role="status"></span>
       </div>
     </div>
     <aside id="help-panel" role="note" aria-label="조작법">

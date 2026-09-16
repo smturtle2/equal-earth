@@ -102,7 +102,7 @@ async function installReadback(page: Page) {
     const writeBuffer = GPUQueue.prototype.writeBuffer;
     GPUQueue.prototype.writeBuffer = function (...args) {
       const data = args[2];
-      if (data instanceof Float32Array && data.length === 20) stats.rotation = Array.from(data.slice(0, 16));
+      if (data instanceof Float32Array && data.length === 24) stats.rotation = Array.from(data.slice(0, 16));
       return writeBuffer.apply(this, args);
     };
     const getContext = HTMLCanvasElement.prototype.getContext;
@@ -281,7 +281,7 @@ test('maps a known raster accurately through rotation, handles input and idles',
   expect(touched.hash).not.toBe(mobile.hash);
   expect(touched.white).toBeLessThan(mobile.white);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
-  expect((await stats()).contexts).toEqual(['map:webgpu', 'globe:webgpu']);
+  expect((await stats()).contexts).toEqual(['map:webgpu', 'map-labels:2d', 'globe:webgpu']);
   expect(requests.filter(url => url.includes('/textures/')).map(url => new URL(url).pathname))
     .toEqual(['/textures/natural-earth.jpg']);
   expect(errors).toEqual([]);

@@ -1,0 +1,31 @@
+{
+  "natural_earth_version": "5.1.2",
+  "sources": {
+    "countries": {
+      "url": "https://naturalearth.s3.amazonaws.com/5.1.2/50m_cultural/ne_50m_admin_0_countries.zip",
+      "sha256": "5fed433373581fa648920435f937d95f2d3c0200e067409c6478dcdf1b853139"
+    },
+    "boundaries": {
+      "url": "https://naturalearth.s3.amazonaws.com/5.1.2/50m_cultural/ne_50m_admin_0_boundary_lines_land.zip",
+      "sha256": "02f369ae10578c4ce33fc4a08f8cdd69ea11eb39b44d7923e88eb7199aaff8ea"
+    },
+    "places": {
+      "url": "https://naturalearth.s3.amazonaws.com/5.1.2/50m_cultural/ne_50m_populated_places.zip",
+      "sha256": "9022c3be867be79c44bd6fc6ff4dcc210e85ffee13b033bf4d1d87d83c9ee6b4"
+    }
+  },
+  "outputs": {
+    "public/textures/political.png": {
+      "sha256": "289060c1ac1bd50b60fd561bcd4be1f4f9c1f15668f602da121b73a45fc0cca8",
+      "bytes": 467080
+    },
+    "public/layers/borders.png": {
+      "sha256": "01eb2ecd3dd524166f1f7cb9a6ff6117b3a8541c47b6ea1d4e902f0599b64ac4",
+      "bytes": 229094
+    },
+    "public/layers/labels.json": {
+      "sha256": "94d522c83b2e4f47dff4502771540c5a61c22829e74b1c8b1c80d8aa82a806c4",
+      "bytes": 64111
+    }
+  }
+}

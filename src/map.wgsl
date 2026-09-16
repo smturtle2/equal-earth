@@ -2,6 +2,7 @@ struct View {
   inverseRotation: mat4x4<f32>,
   // Center, scale, and whether the output background is transparent.
   viewport: vec4<f32>,
+  details: vec4<f32>,
 }
 
 @group(0) @binding(0) var<uniform> view: View;
@@ -25,7 +26,7 @@ fn computeMain(@builtin(global_invocation_id) id: vec3<u32>) {
       if (row.w > 0.0 && abs(longitude) <= 3.141592653589793) {
         let direction = vec3<f32>(row.y * sin(longitude), row.x, row.y * cos(longitude));
         let world = (view.inverseRotation * vec4<f32>(direction, 0.0)).xyz;
-        color += surfaceColor(world);
+        color += surfaceColor(world, view.details);
         coverage += 1.0;
       }
     }

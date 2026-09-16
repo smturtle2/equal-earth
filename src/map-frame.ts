@@ -27,8 +27,8 @@ export function createMapPipeline(device: GPUDevice) {
 
 // Each target owns its buffers so an export cannot resize or overwrite the live view.
 export function createMapFrame(device: GPUDevice, pipeline: GPUComputePipeline, sampler: GPUSampler, background: 'white' | 'transparent' = 'white') {
-  const uniform = device.createBuffer({ size: 80, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const values = new Float32Array(20);
+  const uniform = device.createBuffer({ size: 96, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const values = new Float32Array(24);
   const inverse = quat.create();
   const matrix = mat4.create();
   let rows: GPUBuffer | undefined;
@@ -36,12 +36,14 @@ export function createMapFrame(device: GPUDevice, pipeline: GPUComputePipeline, 
   let bindings: GPUBindGroup;
   let lastShape = '';
   let lastTexture: GPUTexture | undefined;
+  let lastBorders: GPUTexture | undefined;
 
   return {
-    encode(commands: GPUCommandEncoder, texture: GPUTexture, layout: FrameLayout, rotation: quat): GPUTexture {
+    encode(commands: GPUCommandEncoder, texture: GPUTexture, borders: GPUTexture, layout: FrameLayout,
+      rotation: quat, details: readonly [boolean, boolean]): GPUTexture {
       const { width, height, x, y, scale } = layout;
       const shape = `${width}:${height}:${scale}:${y}`;
-      if (shape !== lastShape || texture !== lastTexture) {
+      if (shape !== lastShape || texture !== lastTexture || borders !== lastBorders) {
         const data = createRows(height, scale, SAMPLE_GRID, y);
         if (!rows || rows.size !== data.byteLength) {
           rows?.destroy();
@@ -58,15 +60,18 @@ export function createMapFrame(device: GPUDevice, pipeline: GPUComputePipeline, 
           { binding: 2, resource: frame.createView() },
           { binding: 3, resource: texture.createView() },
           { binding: 4, resource: sampler },
+          { binding: 5, resource: borders.createView() },
         ] });
         device.queue.writeBuffer(rows, 0, data);
         lastShape = shape;
         lastTexture = texture;
+        lastBorders = borders;
       }
       quat.conjugate(inverse, rotation);
       mat4.fromQuat(matrix, inverse);
       values.set(matrix);
       values.set([x, y, scale, background === 'transparent' ? 1 : 0], 16);
+      values.set([Number(details[0]), Number(details[1]), 0, 0], 20);
       device.queue.writeBuffer(uniform, 0, values);
       const pass = commands.beginComputePass();
       pass.setPipeline(pipeline);
