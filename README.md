@@ -1,12 +1,18 @@
 ![Equal Earth](docs/assets/readme-header.svg)
 
-**Explore Equal Earth with fluid rotation and vivid textures.**
+<p align="center"><strong>Explore Equal Earth with fluid rotation and vivid textures.</strong></p>
 
-[**Open map ↗**](https://smturtle2.github.io/equal-earth/) · [한국어](docs/README.ko.md) · [Report an issue](https://github.com/smturtle2/equal-earth/issues)
+<p align="center">
+  <a href="https://smturtle2.github.io/equal-earth/"><strong>Open map ↗</strong></a> ·
+  <a href="docs/README.ko.md">한국어</a> ·
+  <a href="https://github.com/smturtle2/equal-earth/issues">Report an issue</a>
+</p>
 
-[![Build and deployment status](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml)
-![WebGPU](https://img.shields.io/badge/renderer-WebGPU-344c5c)
-[![License: EUPL-1.2](https://img.shields.io/badge/license-EUPL--1.2-344c5c)](LICENSE)
+<p align="center">
+  <a href="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml"><img src="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg?branch=main" alt="Build and deployment status"></a>
+  <img src="https://img.shields.io/badge/renderer-WebGPU-344c5c" alt="WebGPU">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="License: EUPL-1.2"></a>
+</p>
 
 ![Equal Earth map in the Balanced view](public/og-image.png)
 

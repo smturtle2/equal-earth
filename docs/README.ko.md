@@ -1,12 +1,18 @@
 ![Equal Earth](assets/readme-header.svg)
 
-**유려한 회전과 생생한 텍스처로 Equal Earth를 탐험하세요.**
+<p align="center"><strong>유려한 회전과 생생한 텍스처로 Equal Earth를 탐험하세요.</strong></p>
 
-[**지도 열기 ↗**](https://smturtle2.github.io/equal-earth/) · [English](../README.md) · [문제 제보](https://github.com/smturtle2/equal-earth/issues)
+<p align="center">
+  <a href="https://smturtle2.github.io/equal-earth/"><strong>지도 열기 ↗</strong></a> ·
+  <a href="../README.md">English</a> ·
+  <a href="https://github.com/smturtle2/equal-earth/issues">문제 제보</a>
+</p>
 
-[![빌드 및 배포 상태](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml)
-![WebGPU](https://img.shields.io/badge/renderer-WebGPU-344c5c)
-[![License: EUPL-1.2](https://img.shields.io/badge/license-EUPL--1.2-344c5c)](../LICENSE)
+<p align="center">
+  <a href="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml"><img src="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg?branch=main" alt="빌드 및 배포 상태"></a>
+  <img src="https://img.shields.io/badge/renderer-WebGPU-344c5c" alt="WebGPU">
+  <a href="../LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="License: EUPL-1.2"></a>
+</p>
 
 ![균형 보기의 Equal Earth 지도](../public/og-image.png)
 
