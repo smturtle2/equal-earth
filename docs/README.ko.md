@@ -1,4 +1,4 @@
-![Equal Earth](assets/readme-header.svg)
+![Equal Earth](../public/og-image.png)
 
 <p align="center"><strong>유려한 회전과 생생한 텍스처로 Equal Earth를 탐험하세요.</strong></p>
 
@@ -13,8 +13,6 @@
   <img src="https://img.shields.io/badge/renderer-WebGPU-344c5c" alt="WebGPU">
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="License: EUPL-1.2"></a>
 </p>
-
-![균형 보기의 Equal Earth 지도](../public/og-image.png)
 
 ## 지도 스타일
 

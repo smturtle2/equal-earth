@@ -1,4 +1,4 @@
-![Equal Earth](docs/assets/readme-header.svg)
+![Equal Earth](public/og-image.png)
 
 <p align="center"><strong>Explore Equal Earth with fluid rotation and vivid textures.</strong></p>
 
@@ -13,8 +13,6 @@
   <img src="https://img.shields.io/badge/renderer-WebGPU-344c5c" alt="WebGPU">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="License: EUPL-1.2"></a>
 </p>
-
-![Equal Earth map in the Balanced view](public/og-image.png)
 
 ## Map styles
 
