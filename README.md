@@ -1,23 +1,65 @@
 # Equal Earth
 
-[Open map](https://smturtle2.github.io/equal-earth/) · [한국어](docs/README.ko.md)
+[![Equal Earth map in the default view](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
 
-![Equal Earth map](public/og-image.png)
+<p align="center">
+  <a href="https://smturtle2.github.io/equal-earth/"><strong>Open map</strong></a> ·
+  <a href="docs/README.ko.md">한국어</a> ·
+  <a href="https://github.com/smturtle2/equal-earth/issues">Report an issue</a>
+</p>
 
-Rotate the world to choose your own center. The map and globe move together. Requires WebGPU.
+<p align="center">
+  <a href="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml"><img src="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg" alt="Build and deployment status"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="License: EUPL-1.2"></a>
+</p>
 
-- **Navigate:** drag to rotate, scroll to zoom, Q/E to roll, double-click to reset.
-- **Center:** choose a preset, enter coordinates, or use your location.
-- **Style:** switch textures, toggle borders and names, and save a transparent 4K PNG.
+An interactive Equal Earth map that lets you choose the center. Rotate the world in any direction while preserving the relative areas of continents.
+
+## Features
+
+- **Free rotation** — drag, tilt, and roll the map around any point.
+- **Synchronized globe** — explore the same orientation in flat and spherical views.
+- **Three map styles** — Natural Earth II, NASA Blue Marble, and Atlas, a country-colored map at 8192 × 4096 resolution.
+- **Borders and names** — toggle national boundaries and upright country/capital labels together on any map style.
+- **Mouse, touch, and keyboard** — rotate either view; zoom the flat map independently.
+
+The interface follows your browser’s language preferences: Korean or English, with English as the fallback.
+
+Requires a browser with WebGPU enabled.
+
+## Controls
+
+| Input | Action |
+| --- | --- |
+| Drag / arrow keys | Rotate the map and globe |
+| Shift + drag / hold Q or E | Roll; Shift + Q/E increases speed |
+| Scroll / pinch / + or − | Zoom the flat map |
+| Two-finger gesture | Rotate, twist, and zoom |
+| 0 / Home / double-click | Reset the view |
+| Globe layer button | Toggle the graticule or current Earth texture |
+
+The interface supports mouse, touch, and keyboard controls.
+
+- **Location & coordinates:** use your location or enter `latitude, longitude`. Location permission is requested on click; your position is not saved.
+- **Presets:** return to Default or choose a continent or pole. Southern-hemisphere presets put the South Pole above the center. Switching preserves zoom.
+- **Map details:** toggle borders and country/capital names together. Labels stay upright; capitals appear as you zoom in.
+- **PNG export:** save the current map at 4K with a transparent background, including visible borders and names. Controls and the small globe are excluded.
+
+Regenerate map assets with `uv run --script tools/build_political_assets.py`. See [source details](public/layers/sources.json).
 
 ## Development
 
-Node.js 24+.
+Use Node.js 24 or later.
 
 ```sh
 npm ci
 npm run dev
 ```
+
+Built with TypeScript, Vite, WebGPU, and gl-matrix.
+
+<details>
+<summary>Build and test</summary>
 
 ```sh
 npm test
@@ -26,8 +68,12 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Push to `main` to deploy to GitHub Pages after checks pass.
+Build output goes to `dist/`. Pushes to `main` deploy to GitHub Pages after tests pass; pull requests run checks only. See the [deployment workflow](.github/workflows/pages.yml).
 
-## License
+</details>
 
-[EUPL-1.2](LICENSE). Imagery and map data: Natural Earth and NASA. See [third-party notices](docs/THIRD_PARTY_NOTICES.md).
+## Credits & license
+
+Earth imagery: [Natural Earth](https://www.naturalearthdata.com/) and [NASA Blue Marble](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/). Blue Marble uses the July 2004 composite.
+
+Code and documentation: [EUPL-1.2](LICENSE). External assets retain their original terms; see [third-party notices](docs/THIRD_PARTY_NOTICES.md) and [texture sources](public/textures/sources.json).

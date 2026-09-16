@@ -5,7 +5,12 @@ const labels = {
   ko: { controls: '조작법', texture: '지도 텍스처', coordinates: '중심 좌표 편집', download: '지도 4K PNG 다운로드', locate: '내 위치로 이동', error: 'WebGPU를 사용할 수 있는 브라우저에서 열어 주세요.', mouse: /드래그 회전/, touch: /두 손가락으로 확대·비틀기/ },
 };
 
-test('localizes concise help and errors, falls back to English, and fits touch layouts', async ({ browser, baseURL }) => {
+test('localizes concise help and errors, falls back to English, and fits touch layouts', async ({ browser, baseURL, request }) => {
+  const initialHTML = await (await request.get('/')).text();
+  expect(initialHTML).toContain('<html lang="en">');
+  expect(initialHTML).toContain('content="en_US"');
+  expect(initialHTML).toContain('aria-label="Map texture"');
+  expect(initialHTML).not.toMatch(/[가-힣]|\{\{/);
   for (const [locale, language, touch, width] of [
     ['en-US', 'en', false, 1200], ['ko-KR', 'ko', false, 1200], ['fr-FR', 'en', false, 1200],
     ['en-US', 'en', true, 390], ['ko-KR', 'ko', true, 390],
@@ -19,6 +24,8 @@ test('localizes concise help and errors, falls back to English, and fits touch l
       await page.goto('/');
       const expected = labels[language];
       await expect(page.locator('html')).toHaveAttribute('lang', language);
+      await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', language === 'ko' ? 'ko_KR' : 'en_US');
+      await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', language === 'ko' ? /중심을 바꿔/ : /A world map/);
       await expect(page.locator('#texture')).toHaveAttribute('aria-label', expected.texture);
       const download = page.locator('#download');
       await expect(download).toHaveAttribute('aria-label', expected.download);
