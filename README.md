@@ -1,29 +1,26 @@
-# Equal Earth
+![Equal Earth](docs/assets/readme-header.svg)
 
-[![Equal Earth map in the default view](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+**Explore Equal Earth with fluid rotation and vivid textures.**
 
-<p align="center">
-  <a href="https://smturtle2.github.io/equal-earth/"><strong>Open map</strong></a> ·
-  <a href="docs/README.ko.md">한국어</a> ·
-  <a href="https://github.com/smturtle2/equal-earth/issues">Report an issue</a>
-</p>
+[**Open map ↗**](https://smturtle2.github.io/equal-earth/) · [한국어](docs/README.ko.md) · [Report an issue](https://github.com/smturtle2/equal-earth/issues)
 
-<p align="center">
-  <a href="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml"><img src="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg" alt="Build and deployment status"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="License: EUPL-1.2"></a>
-</p>
+[Build status](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml) · **WebGPU** · [EUPL-1.2](LICENSE)
 
-An interactive Equal Earth map that lets you choose the center. Rotate the world in any direction while preserving the relative areas of continents.
+![Equal Earth map in the Balanced view](public/og-image.png)
+
+## Map styles
+
+![Natural Earth II, NASA Blue Marble, and Atlas in the same Balanced view](docs/assets/map-styles.svg)
 
 ## Features
 
 - **Free rotation** — drag, tilt, and roll the map around any point.
 - **Synchronized globe** — explore the same orientation in flat and spherical views.
-- **Three map styles** — Natural Earth II, NASA Blue Marble, and Atlas, a country-colored map at 8192 × 4096 resolution.
+- **Map styles** — Natural Earth II, NASA Blue Marble, and Atlas, a country-colored map at 8192 × 4096 resolution.
 - **Borders and names** — toggle national boundaries and upright country/capital labels together on any map style.
 - **Mouse, touch, and keyboard** — rotate either view; zoom the flat map independently.
 
-The interface follows your browser’s language preferences: Korean or English, with English as the fallback.
+The interface follows your browser’s language preferences.
 
 Requires a browser with WebGPU enabled.
 
@@ -58,8 +55,7 @@ npm run dev
 
 Built with TypeScript, Vite, WebGPU, and gl-matrix.
 
-<details>
-<summary>Build and test</summary>
+### Build and test
 
 ```sh
 npm test
@@ -69,8 +65,6 @@ npm run test:browser
 ```
 
 Build output goes to `dist/`. Pushes to `main` deploy to GitHub Pages after tests pass; pull requests run checks only. See the [deployment workflow](.github/workflows/pages.yml).
-
-</details>
 
 ## Credits & license
 

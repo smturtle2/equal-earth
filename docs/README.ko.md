@@ -1,31 +1,28 @@
-# Equal Earth
+![Equal Earth](assets/readme-header.svg)
 
-[![기본 구도로 렌더링한 Equal Earth 지도](../public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+**유려한 회전과 생생한 텍스처로 Equal Earth를 탐험하세요.**
 
-<p align="center">
-  <a href="https://smturtle2.github.io/equal-earth/"><strong>지도 열기</strong></a> ·
-  <a href="../README.md">English</a> ·
-  <a href="https://github.com/smturtle2/equal-earth/issues">문제 제보</a>
-</p>
+[**지도 열기 ↗**](https://smturtle2.github.io/equal-earth/) · [English](../README.md) · [문제 제보](https://github.com/smturtle2/equal-earth/issues)
 
-<p align="center">
-  <a href="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml"><img src="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg" alt="빌드 및 배포 상태"></a>
-  <a href="../LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="라이선스: EUPL-1.2"></a>
-</p>
+[빌드 상태](https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml) · **WebGPU** · [EUPL-1.2](../LICENSE)
 
-원하는 곳을 중심으로 볼 수 있는 인터랙티브 Equal Earth 지도입니다. 대륙의 상대적인 면적을 유지하며 세계를 자유롭게 회전할 수 있습니다.
+![균형 보기의 Equal Earth 지도](../public/og-image.png)
+
+## 지도 스타일
+
+![Natural Earth II, NASA Blue Marble, and Atlas in the same Balanced view](assets/map-styles.svg)
 
 ## 주요 기능
 
 - **자유로운 회전** — 드래그로 지도를 돌리고 기울이거나 비틀 수 있습니다.
 - **동기화된 지구본** — 같은 방향을 평면 지도와 구형 화면으로 함께 봅니다.
-- **세 가지 지도 스타일** — 8192 × 4096 해상도의 Natural Earth II, NASA Blue Marble, 국가별 색상의 Atlas를 전환합니다.
+- **지도 스타일** — 8192 × 4096 해상도의 Natural Earth II, NASA Blue Marble, 국가별 색상의 Atlas를 전환합니다.
 - **국경과 지명** — 모든 지도 스타일에서 국경과 수평을 유지하는 국가·수도 이름을 함께 켜고 끕니다.
 - **마우스·터치·키보드 지원** — 어느 화면에서든 회전하고 평면 지도만 따로 확대할 수 있습니다.
 
 WebGPU를 사용할 수 있는 브라우저가 필요합니다.
 
-브라우저 언어 설정에 따라 한국어 또는 영어를 자동으로 사용하며, 지원하지 않는 언어는 영어로 표시합니다.
+브라우저 언어 설정에 맞춰 인터페이스를 표시합니다.
 
 ## 조작
 
@@ -58,8 +55,7 @@ npm run dev
 
 TypeScript, Vite, WebGPU, gl-matrix로 만들었습니다.
 
-<details>
-<summary>빌드와 테스트</summary>
+### 빌드와 테스트
 
 ```sh
 npm test
@@ -69,8 +65,6 @@ npm run test:browser
 ```
 
 빌드 결과는 `dist/`에 생성됩니다. `main`에 push하면 테스트 통과 후 GitHub Pages에 배포하고, PR에서는 검사만 실행합니다. [배포 워크플로](../.github/workflows/pages.yml)를 참고하세요.
-
-</details>
 
 ## 출처와 라이선스
 
