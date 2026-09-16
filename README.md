@@ -1,76 +1,23 @@
 # Equal Earth
 
-[![Equal Earth map in the default view](public/og-image.png)](https://smturtle2.github.io/equal-earth/)
+[Open map](https://smturtle2.github.io/equal-earth/) · [한국어](docs/README.ko.md)
 
-<p align="center">
-  <a href="https://smturtle2.github.io/equal-earth/"><strong>Open map</strong></a> ·
-  <a href="docs/README.ko.md">한국어</a> ·
-  <a href="https://github.com/smturtle2/equal-earth/issues">Report an issue</a>
-</p>
+![Equal Earth map](public/og-image.png)
 
-<p align="center">
-  <a href="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml"><img src="https://github.com/smturtle2/equal-earth/actions/workflows/pages.yml/badge.svg" alt="Build and deployment status"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-344c5c" alt="License: EUPL-1.2"></a>
-</p>
+Rotate the world to choose your own center. The map and globe move together. Requires WebGPU.
 
-An interactive Equal Earth map that lets you choose the center. Rotate the world in any direction while preserving the relative areas of continents.
-
-## Features
-
-- **Free rotation** — drag, tilt, and roll the map around any point.
-- **Synchronized globe** — explore the same orientation in flat and spherical views.
-- **Three map styles** — Natural Earth II, NASA Blue Marble, and Atlas, a country-colored map at 8192 × 4096 resolution.
-- **Borders and names** — toggle national boundaries and upright country/capital labels together on any map style.
-- **Mouse, touch, and keyboard** — rotate either view; zoom the flat map independently.
-
-The interface follows your browser’s language preferences: Korean or English, with English as the fallback.
-
-Requires a browser with WebGPU enabled.
-
-## Controls
-
-| Input | Action |
-| --- | --- |
-| Drag / arrow keys | Rotate the map and globe |
-| Shift + drag / hold Q or E | Roll; Shift + Q/E increases speed |
-| Scroll / pinch / + or − | Zoom the flat map |
-| Two-finger gesture | Rotate, twist, and zoom |
-| 0 / Home / double-click | Reset the view |
-| Globe layer button | Toggle the graticule or current Earth texture |
-
-Quick controls are shown in the lower-left corner, with touch hints on touch devices.
-
-The location button requests browser permission only when clicked, then moves the center along the shortest great-circle path while keeping the current zoom. Manual map or globe input cancels a pending move. The app does not save your position.
-
-The live center coordinates appear in the top-right corner, beside the my-location button. Click them to edit one field as `latitude, longitude`, by typing or pasting. Press Enter or Go to move along the same great-circle route while keeping the current zoom; Escape or Cancel discards a draft.
-
-The Presets dropdown below the coordinates starts with Default, followed by eight region presets: Asia, Europe, Africa, North America, South America, Oceania, North Pole, and South Pole. Default restores the startup center and orientation while preserving the current zoom. Each region preset restores its representative center and predefined orientation while preserving the current zoom. Northern-hemisphere continent presets place the North Pole vertically above the center; southern-hemisphere presets place the South Pole above it. Both pole presets place the 0° meridian at 12 o’clock and the 180° meridian at 6 o’clock. The center animates along the shortest great-circle path; reduced-motion preferences disable the animation, and manual controls interrupt it.
-
-When preset centers are opposite, the target orientation selects a shortest path without unnecessary extra roll. No geographic waypoint or continued spin direction is prescribed. Map keyboard shortcuts remain available after using buttons; coordinate fields and open menus keep their own keyboard behavior.
-
-Choose a texture from the dropdown below the map. Switching textures preserves the view.
-
-The layers button between the texture selector and download button switches borders and names together on every texture. Choosing Atlas enables the details until you customize the switch; your choice then persists across texture changes. Names stay horizontal as the map rotates, with collision avoidance and fewer labels in smaller views. Capitals appear when there is enough map detail. Borders also appear on the textured globe; names appear on the large map only.
-
-Political colors, land boundaries, and English/Korean names come from Natural Earth 1:50m v5.1.2. Country colors use its MAPCOLOR9 assignments. Boundaries follow the source's default de facto representation; disputed, line-of-control, and indefinite boundaries are dashed. These are generalized cartographic features, not live boundary updates.
-
-Use the download button next to it to save a PNG with a 4,096-pixel long edge. The image keeps the rotation, zoom, texture, borders, names, and aspect ratio at the moment you click. It includes the large map on a transparent background, with the controls and small globe omitted. Image generation runs in your browser.
-
-To regenerate the political assets, run `uv run --script tools/build_political_assets.py`. Dependencies are isolated; source URLs and source/output hashes are recorded in [the layer manifest](public/layers/sources.json).
+- **Navigate:** drag to rotate, scroll to zoom, Q/E to roll, double-click to reset.
+- **Center:** choose a preset, enter coordinates, or use your location.
+- **Style:** switch textures, toggle borders and names, and save a transparent 4K PNG.
 
 ## Development
 
-Use Node.js 24 or later.
+Node.js 24+.
 
 ```sh
 npm ci
 npm run dev
 ```
-
-Built with TypeScript, Vite, WebGPU, and gl-matrix.
-
-<details>
-<summary>Build and test</summary>
 
 ```sh
 npm test
@@ -79,12 +26,8 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-Build output goes to `dist/`. Pushes to `main` deploy to GitHub Pages after tests pass; pull requests run checks only. See the [deployment workflow](.github/workflows/pages.yml).
+Push to `main` to deploy to GitHub Pages after checks pass.
 
-</details>
+## License
 
-## Credits & license
-
-Earth imagery: [Natural Earth](https://www.naturalearthdata.com/) and [NASA Blue Marble](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/). Blue Marble uses the July 2004 composite.
-
-Code and documentation: [EUPL-1.2](LICENSE). External assets retain their original terms; see [third-party notices](docs/THIRD_PARTY_NOTICES.md) and [texture sources](public/textures/sources.json).
+[EUPL-1.2](LICENSE). Imagery and map data: Natural Earth and NASA. See [third-party notices](docs/THIRD_PARTY_NOTICES.md).
