@@ -226,7 +226,8 @@ test('maps a known raster accurately through rotation, handles input and idles',
   await expect.poll(async () => (await stats()).submits).toBeGreaterThan(released + 2);
   await canvas.evaluate(element => (element as HTMLCanvasElement).blur());
   await page.keyboard.up('e');
-  await page.waitForTimeout(150);
+  // Blur queues a final frame; wait for rendering to settle before measuring idle.
+  await waitForIdle(page);
   const blurred = (await stats()).submits;
   await page.waitForTimeout(200);
   expect((await stats()).submits).toBe(blurred);

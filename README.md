@@ -41,7 +41,7 @@ Requires a browser with WebGPU enabled.
 The interface supports mouse, touch, and keyboard controls.
 
 - **Location & coordinates:** use your location or enter `latitude, longitude`. Location permission is requested on click; your position is not saved.
-- **Presets:** return to Default or choose a continent or pole. Southern-hemisphere presets put the South Pole above the center. Switching preserves zoom.
+- **Presets:** return to Balanced or choose a continent or pole. Southern-hemisphere presets put the South Pole above the center. Switching preserves zoom.
 - **Map details:** toggle borders and country/capital names together. Labels stay upright; capitals appear as you zoom in.
 - **PNG export:** save the current map at 4K with a transparent background, including visible borders and names. Controls and the small globe are excluded.
 
